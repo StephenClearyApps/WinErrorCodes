@@ -1,0 +1,9 @@
+{
+  "name": "web",
+  "version": false,
+  "dependencies": {},
+  "ambientDependencies": {
+    "jquery": "registry:dt/jquery#1.10.0+20160417213236",
+    "whatwg-fetch": "registry:dt/whatwg-fetch#0.0.0+20160412133644"
+  }
+}
