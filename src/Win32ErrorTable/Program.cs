@@ -13,49 +13,58 @@ namespace Win32ErrorTable
     static class Program
     {
         [STAThread]
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            var dllPath = Path.Combine(GetFolderPath(SpecialFolder.SystemX86), "en-US");
-            var results = new Results(null, null, null, null, null);
+            try
+            {
+                var result = true;
 
-            Console.WriteLine();
-            Console.WriteLine("Basic WinError.h/kernel32.dll messages, which include most Win32 errors and HRESULTS.");
+                var dllPath = Path.Combine(GetFolderPath(SpecialFolder.SystemX86), "en-US");
+                var results = new Results(null, null, null, null, null);
 
-            var win32 = new WinErrorH().Process();
-            Validation.CheckResults(win32);
+                Console.WriteLine();
+                Console.WriteLine("Basic WinError.h/kernel32.dll messages, which include most Win32 errors and HRESULTS.");
 
-            var kernelMessages = new Resources(Path.Combine(dllPath, "kernel32.dll.mui")).Process();
-            Validation.CheckResults(kernelMessages);
+                var win32 = new WinErrorH().Process();
+                result = result && Validation.CheckResults(win32);
 
-            Validation.CrossCheckWin32Results(win32, kernelMessages);
-            results.MergeWith(win32);
+                var kernelMessages = new Resources(Path.Combine(dllPath, "kernel32.dll.mui")).Process();
+                result = result && Validation.CheckResults(kernelMessages);
 
-            Console.WriteLine();
-            Console.WriteLine("Basic ntstatus.h/ntdll.dll messages, which include most NTSTATUS values.");
+                result = result && Validation.CrossCheckWin32Results(win32, kernelMessages);
+                results.MergeWith(win32);
 
-            var ntstatus = new NtStatusH().Process();
-            Validation.CheckResults(ntstatus);
+                Console.WriteLine();
+                Console.WriteLine("Basic ntstatus.h/ntdll.dll messages, which include most NTSTATUS values.");
 
-            var ntdllMessages = new Resources(Path.Combine(dllPath, "ntdll.dll.mui")).Process();
-            Validation.CheckResults(ntdllMessages);
+                var ntstatus = new NtStatusH().Process();
+                result = result && Validation.CheckResults(ntstatus);
 
-            Validation.CrossCheckNtStatusResults(ntstatus, ntdllMessages);
-            results.MergeWith(ntstatus);
+                var ntdllMessages = new Resources(Path.Combine(dllPath, "ntdll.dll.mui")).Process();
+                result = result && Validation.CheckResults(ntdllMessages);
 
-            // TODO: other Win32/HRESULT values.
+                result = result && Validation.CrossCheckNtStatusResults(ntstatus, ntdllMessages);
+                results.MergeWith(ntstatus);
 
-            Console.WriteLine();
-            Console.WriteLine("Combined.");
+                // TODO: other Win32/HRESULT values.
 
-            Validation.CheckResults(results);
-            Export.Json(results);
+                Console.WriteLine();
+                Console.WriteLine("Combined.");
 
-            Console.WriteLine();
-            Console.WriteLine("Win32: " + results.Win32Errors.Count);
-            Console.WriteLine("HRESULT: " + results.HResultErrors.Count);
-            Console.WriteLine("NTSTATUS: " + results.NtStatusErrors.Count);
-            Console.Error.WriteLine("Done.");
-            Console.ReadKey();
+                result = result && Validation.CheckResults(results);
+                Export.Json(results);
+
+                Console.WriteLine();
+                Console.WriteLine("Win32: " + results.Win32Errors.Count);
+                Console.WriteLine("HRESULT: " + results.HResultErrors.Count);
+                Console.WriteLine("NTSTATUS: " + results.NtStatusErrors.Count);
+                return result ? 0 : 1;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+                return -1;
+            }
         }
 
 #if NO

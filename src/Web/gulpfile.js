@@ -8,6 +8,8 @@ var webpack = require('webpack');
 var webpackStream = require('webpack-stream');
 var cssNano = require('gulp-cssnano');
 var webserver = require('gulp-webserver');
+var exec = require('child_process').exec;
+var path = require('path');
 
 var debug = (process.env.NODE_ENV !== 'production');
 
@@ -71,7 +73,19 @@ gulp.task('html', function () {
         .pipe(gulp.dest(config.paths.dist));
 });
 
-gulp.task('build', ['html', 'css', 'js']);
+gulp.task('generate', function (done) {
+    exec('src\\Win32ErrorTable\\bin\\Debug\\Win32ErrorTable.exe', { cwd: path.resolve('../..') }, function (err, stdout, stderr) {
+        console.log(stdout);
+        if (err) {
+            console.log(stderr);
+            done(err);
+        } else {
+            done();
+        }
+    });
+});
+
+gulp.task('build', ['html', 'css', 'js', 'generate']);
 
 gulp.task('watch', ['build'], function () {
     gulp.watch(config.paths.allSrc, ['build']);
