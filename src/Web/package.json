@@ -4,7 +4,8 @@
   "description": "HRESULT, Win32, and NTSTATUS Error Codes",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prod": "set NODE_ENV=production&&gulp",
+    "dev": "set NODE_ENV=&&gulp"
   },
   "author": "Stephen Cleary",
   "license": "MIT",

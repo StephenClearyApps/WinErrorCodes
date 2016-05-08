@@ -8,6 +8,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HeaderFinder", "HeaderFinder\HeaderFinder.vcxproj", "{BC268C4D-9B65-4FF2-9364-B146285E4554}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web", "Web\Web.csproj", "{9B093F2A-8654-4317-98FD-63C52D4FDA96}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CE10FE93-273C-47FA-81F9-82CC04CB6AF6} = {CE10FE93-273C-47FA-81F9-82CC04CB6AF6}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
