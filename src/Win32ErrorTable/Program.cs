@@ -12,44 +12,29 @@ namespace Win32ErrorTable
 {
     static class Program
     {
+        private static bool Result = true;
+        private static readonly string DllPath = Path.Combine(GetFolderPath(SpecialFolder.SystemX86), "en-US");
+
         [STAThread]
         static int Main(string[] args)
         {
             try
             {
-                var result = true;
-
-                var dllPath = Path.Combine(GetFolderPath(SpecialFolder.SystemX86), "en-US");
                 var results = new Results(null, null, null, null, null);
 
-                var win32 = new WinErrorH().Process();
-                result = result && Validation.CheckResults(win32, true);
-
-                var kernelMessages = new Resources(Path.Combine(dllPath, "kernel32.dll.mui")).Process();
-                result = result && Validation.CheckResults(kernelMessages, true);
-
-                result = result && Validation.CrossCheckWin32Results(win32, kernelMessages, false);
-                results.MergeWith(win32);
-
-                var ntstatus = new NtStatusH().Process();
-                result = result && Validation.CheckResults(ntstatus, true);
-
-                var ntdllMessages = new Resources(Path.Combine(dllPath, "ntdll.dll.mui")).Process();
-                result = result && Validation.CheckResults(ntdllMessages, true);
-
-                result = result && Validation.CrossCheckNtStatusResults(ntstatus, ntdllMessages, false);
-                results.MergeWith(ntstatus);
+                results.MergeWith(Win32());
+                results.MergeWith(NtStatus());
 
                 // TODO: other Win32/HRESULT values.
 
-                result = result && Validation.CheckResults(results, false);
+                Result = Result && Validation.CheckResults(results, false);
                 Export.Json(results);
 
                 Console.WriteLine();
                 Console.WriteLine("Win32: " + results.Win32Errors.Count);
                 Console.WriteLine("HRESULT: " + results.HResultErrors.Count);
                 Console.WriteLine("NTSTATUS: " + results.NtStatusErrors.Count);
-                return result ? 0 : 1;
+                return Result ? 0 : 1;
             }
             catch (Exception ex)
             {
@@ -58,6 +43,29 @@ namespace Win32ErrorTable
             }
         }
 
+        static Results Win32()
+        {
+            var win32 = new WinErrorH().Process();
+            Result = Result && Validation.CheckResults(win32, true);
+
+            var kernelMessages = new Resources(Path.Combine(DllPath, "kernel32.dll.mui")).Process();
+            Result = Result && Validation.CheckResults(kernelMessages, true);
+
+            Result = Result && Validation.CrossCheckWin32Results(win32, kernelMessages, false);
+            return win32;
+        }
+
+        static Results NtStatus()
+        {
+            var ntstatus = new NtStatusH().Process();
+            Result = Result && Validation.CheckResults(ntstatus, true);
+
+            var ntdllMessages = new Resources(Path.Combine(DllPath, "ntdll.dll.mui")).Process();
+            Result = Result && Validation.CheckResults(ntdllMessages, true);
+
+            Result = Result && Validation.CrossCheckNtStatusResults(ntstatus, ntdllMessages, false);
+            return ntstatus;
+        }
 
 #if NO
         Links:
