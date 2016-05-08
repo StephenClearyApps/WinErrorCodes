@@ -33,12 +33,12 @@ var webpackConfig = {
         filename: 'app.js'
     },
     resolve: {
-        extensions: ['', '.webpack.js', '.web.js', '.ts']
+        extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx']
     },
     module: {
         loaders: [
             {
-                test: /\.ts$/,
+                test: /\.tsx?$/,
                 exclude: /node_modules/,
                 loader: 'babel-loader!eslint-loader!ts-loader'
             }

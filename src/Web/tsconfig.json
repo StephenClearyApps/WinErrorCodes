@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es6",
     "module": "es2015",
+    "jsx": "preserve",
     "outDir": "build",
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
