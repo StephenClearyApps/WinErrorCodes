@@ -22,36 +22,27 @@ namespace Win32ErrorTable
                 var dllPath = Path.Combine(GetFolderPath(SpecialFolder.SystemX86), "en-US");
                 var results = new Results(null, null, null, null, null);
 
-                Console.WriteLine();
-                Console.WriteLine("Basic WinError.h/kernel32.dll messages, which include most Win32 errors and HRESULTS.");
-
                 var win32 = new WinErrorH().Process();
-                result = result && Validation.CheckResults(win32);
+                result = result && Validation.CheckResults(win32, true);
 
                 var kernelMessages = new Resources(Path.Combine(dllPath, "kernel32.dll.mui")).Process();
-                result = result && Validation.CheckResults(kernelMessages);
+                result = result && Validation.CheckResults(kernelMessages, true);
 
-                result = result && Validation.CrossCheckWin32Results(win32, kernelMessages);
+                result = result && Validation.CrossCheckWin32Results(win32, kernelMessages, false);
                 results.MergeWith(win32);
 
-                Console.WriteLine();
-                Console.WriteLine("Basic ntstatus.h/ntdll.dll messages, which include most NTSTATUS values.");
-
                 var ntstatus = new NtStatusH().Process();
-                result = result && Validation.CheckResults(ntstatus);
+                result = result && Validation.CheckResults(ntstatus, true);
 
                 var ntdllMessages = new Resources(Path.Combine(dllPath, "ntdll.dll.mui")).Process();
-                result = result && Validation.CheckResults(ntdllMessages);
+                result = result && Validation.CheckResults(ntdllMessages, true);
 
-                result = result && Validation.CrossCheckNtStatusResults(ntstatus, ntdllMessages);
+                result = result && Validation.CrossCheckNtStatusResults(ntstatus, ntdllMessages, false);
                 results.MergeWith(ntstatus);
 
                 // TODO: other Win32/HRESULT values.
 
-                Console.WriteLine();
-                Console.WriteLine("Combined.");
-
-                result = result && Validation.CheckResults(results);
+                result = result && Validation.CheckResults(results, false);
                 Export.Json(results);
 
                 Console.WriteLine();
@@ -66,6 +57,7 @@ namespace Win32ErrorTable
                 return -1;
             }
         }
+
 
 #if NO
         Links:

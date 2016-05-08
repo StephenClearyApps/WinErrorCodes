@@ -8,7 +8,13 @@ namespace Win32ErrorTable
 {
     public static class Validation
     {
-        public static bool CheckResults(Results results)
+        private static void WriteLine(bool silent, string text)
+        {
+            if (!silent)
+                Console.WriteLine(text);
+        }
+
+        public static bool CheckResults(Results results, bool silent)
         {
             bool result = true;
 
@@ -18,7 +24,7 @@ namespace Win32ErrorTable
             {
                 if (facilities.ContainsKey(facility.Value))
                 {
-                    Console.WriteLine("Duplicated HRESULT facility code " + facility.Value);
+                    WriteLine(silent, "Duplicated HRESULT facility code " + facility.Value);
                     result = false;
                 }
                 else
@@ -33,7 +39,7 @@ namespace Win32ErrorTable
             {
                 if (ntFacilities.ContainsKey(facility.Value))
                 {
-                    Console.WriteLine("Duplicated HRESULT facility code " + facility.Value);
+                    WriteLine(silent, "Duplicated HRESULT facility code " + facility.Value);
                     result = false;
                 }
                 else
@@ -48,7 +54,7 @@ namespace Win32ErrorTable
             {
                 if (win32codes.ContainsKey(win32.Code))
                 {
-                    Console.WriteLine("Duplicated Win32 code " + win32.Code);
+                    WriteLine(silent, "Duplicated Win32 code " + win32.Code);
                     result = false;
                 }
                 else
@@ -63,7 +69,7 @@ namespace Win32ErrorTable
                 if (hresultCodes.ContainsKey(hresult.Code))
                 {
                     result = false;
-                    Console.WriteLine("Duplicated HRESULT code " + hresult.Code.ToString("X8"));
+                    WriteLine(silent, "Duplicated HRESULT code " + hresult.Code.ToString("X8"));
                 }
                 else
                 {
@@ -77,7 +83,7 @@ namespace Win32ErrorTable
                 if (ntstatusCodes.ContainsKey(ntstatus.Code))
                 {
                     result = false;
-                    Console.WriteLine("Duplicated NTSTATUS code " + ntstatus.Code.ToString("X8"));
+                    WriteLine(silent, "Duplicated NTSTATUS code " + ntstatus.Code.ToString("X8"));
                 }
                 else
                 {
@@ -87,32 +93,32 @@ namespace Win32ErrorTable
 
             // Display all shared codes.
             foreach (var facility in results.HResultFacilities.Where(x => x.Names.Count > 1))
-                Console.WriteLine("HRESULT Facility " + facility.Value + " shared between " + string.Join(" ", facility.Names));
+                WriteLine(silent, "HRESULT Facility " + facility.Value + " shared between " + string.Join(" ", facility.Names));
             foreach (var facility in results.NtStatusFacilities.Where(x => x.Names.Count > 1))
-                Console.WriteLine("NTSTATUS Facility " + facility.Value + " shared between " + string.Join(" ", facility.Names));
+                WriteLine(silent, "NTSTATUS Facility " + facility.Value + " shared between " + string.Join(" ", facility.Names));
             foreach (var win32 in results.Win32Errors.Where(x => x.Ids.Count > 1))
-                Console.WriteLine("Win32 " + win32.Code + " shared between " + string.Join(" ", win32.Ids));
+                WriteLine(silent, "Win32 " + win32.Code + " shared between " + string.Join(" ", win32.Ids));
             foreach (var hresult in results.HResultErrors.Where(x => x.Ids.Count > 1))
-                Console.WriteLine("HRESULT " + hresult.Code.ToString("X8") + " shared between " + string.Join(" ", hresult.Ids));
+                WriteLine(silent, "HRESULT " + hresult.Code.ToString("X8") + " shared between " + string.Join(" ", hresult.Ids));
             foreach (var ntstatus in results.NtStatusErrors.Where(x => x.Ids.Count > 1))
-                Console.WriteLine("NTSTATUS " + ntstatus.Code.ToString("X8") + " shared between " + string.Join(" ", ntstatus.Ids));
+                WriteLine(silent, "NTSTATUS " + ntstatus.Code.ToString("X8") + " shared between " + string.Join(" ", ntstatus.Ids));
 
             // Display all codes without text.
             foreach (var win32 in results.Win32Errors.Where(x => x.Text == ""))
-                Console.WriteLine("Win32 " + string.Join(" ", win32.Ids) + " (" + win32.Code + ") has no text.");
+                WriteLine(silent, "Win32 " + string.Join(" ", win32.Ids) + " (" + win32.Code + ") has no text.");
             foreach (var hresult in results.HResultErrors.Where(x => x.Text == ""))
             {
                 if (results.HResultIsKnownWin32Error(hresult.Code))
                     continue;
-                Console.WriteLine("HRESULT " + string.Join(" ", hresult.Ids) + " (" + hresult.Code.ToString("X8") + ") has no text.");
+                WriteLine(silent, "HRESULT " + string.Join(" ", hresult.Ids) + " (" + hresult.Code.ToString("X8") + ") has no text.");
             }
             foreach (var ntstatus in results.NtStatusErrors.Where(x => x.Text == ""))
-                Console.WriteLine("NTSTATUS " + string.Join(" ", ntstatus.Ids) + " (" + ntstatus.Code.ToString("X8") + ") has no text.");
+                WriteLine(silent, "NTSTATUS " + string.Join(" ", ntstatus.Ids) + " (" + ntstatus.Code.ToString("X8") + ") has no text.");
 
             return result;
         }
 
-        public static bool CheckResults(IList<ErrorMessage> results)
+        public static bool CheckResults(IList<ErrorMessage> results, bool silent)
         {
             bool result = true;
 
@@ -123,7 +129,7 @@ namespace Win32ErrorTable
                 if (codes.ContainsKey(code.Code))
                 {
                     result = false;
-                    Console.WriteLine("Duplicated Resource code " + code.Code);
+                    WriteLine(silent, "Duplicated Resource code " + code.Code);
                 }
                 else
                 {
@@ -134,7 +140,7 @@ namespace Win32ErrorTable
             return result;
         }
 
-        public static bool CrossCheckWin32Results(Results headerResults, IList<ErrorMessage> resourceResults)
+        public static bool CrossCheckWin32Results(Results headerResults, IList<ErrorMessage> resourceResults, bool silent)
         {
             // Check that both sets have all codes.
             var headerSet = headerResults.Win32Errors.Concat(headerResults.HResultErrors).Select(x => x.Code).ToList();
@@ -143,10 +149,10 @@ namespace Win32ErrorTable
             {
                 if (headerResults.HResultIsKnownWin32Error(code))
                     continue;
-                Console.WriteLine("Extra Header value: " + code.ToString("X8"));
+                WriteLine(silent, "Extra Header value: " + code.ToString("X8"));
             }
             foreach (var code in resourceSet.Except(headerSet))
-                Console.WriteLine("Extra Resource value: " + code.ToString("X8"));
+                WriteLine(silent, "Extra Resource value: " + code.ToString("X8"));
 
             // Check that for each code in both sets, the text is the same.
             foreach (var code in headerSet.Intersect(resourceSet))
@@ -155,24 +161,24 @@ namespace Win32ErrorTable
                 var resourceCode = resourceResults.First(x => x.Code == code);
                 if (headerCode.Text != resourceCode.Text)
                 {
-                    Console.WriteLine("Text mismatch:");
-                    Console.WriteLine(headerCode.Text);
-                    Console.WriteLine(resourceCode.Text);
+                    WriteLine(silent, "Text mismatch:");
+                    WriteLine(silent, headerCode.Text);
+                    WriteLine(silent, resourceCode.Text);
                 }
             }
 
             return true;
         }
 
-        public static bool CrossCheckNtStatusResults(Results headerResults, IList<ErrorMessage> resourceResults)
+        public static bool CrossCheckNtStatusResults(Results headerResults, IList<ErrorMessage> resourceResults, bool silent)
         {
             // Check that both sets have all codes.
             var headerSet = headerResults.NtStatusErrors.Select(x => x.Code).ToList();
             var resourceSet = resourceResults.Select(x => x.Code).ToList();
             foreach (var code in headerSet.Except(resourceSet))
-                Console.WriteLine("Extra Header value: " + code.ToString("X8"));
+                WriteLine(silent, "Extra Header value: " + code.ToString("X8"));
             foreach (var code in resourceSet.Except(headerSet))
-                Console.WriteLine("Extra Resource value: " + code.ToString("X8"));
+                WriteLine(silent, "Extra Resource value: " + code.ToString("X8"));
 
             // Check that for each code in both sets, the text is the same.
             foreach (var code in headerSet.Intersect(resourceSet))
@@ -181,9 +187,9 @@ namespace Win32ErrorTable
                 var resourceCode = resourceResults.First(x => x.Code == code);
                 if (headerCode.Text != resourceCode.Text)
                 {
-                    Console.WriteLine("Text mismatch:");
-                    Console.WriteLine(headerCode.Text);
-                    Console.WriteLine(resourceCode.Text);
+                    WriteLine(silent, "Text mismatch:");
+                    WriteLine(silent, headerCode.Text);
+                    WriteLine(silent, resourceCode.Text);
                 }
             }
 
