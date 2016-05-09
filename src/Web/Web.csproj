@@ -30,10 +30,12 @@
     <Content Include="package.json" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="src\main.ts" />
+    <TypeScriptCompile Include="src\home.tsx" />
+    <TypeScriptCompile Include="src\main.tsx" />
     <TypeScriptCompile Include="typings\browser.d.ts" />
     <TypeScriptCompile Include="typings\browser\ambient\jquery\index.d.ts" />
     <TypeScriptCompile Include="typings\browser\ambient\whatwg-fetch\index.d.ts" />
+    <TypeScriptCompile Include="typings\manual\globals.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".babelrc" />

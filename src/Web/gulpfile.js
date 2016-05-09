@@ -19,7 +19,7 @@ var config = {
         html: './src/*.html',
         css: './src/*.css',
         js: './src/**/*.js',
-        mainJs: './src/main.ts',
+        mainJs: './src/main.tsx',
         dist: '../..'
     }
 };
@@ -33,7 +33,7 @@ var webpackConfig = {
         filename: 'app.js'
     },
     resolve: {
-        extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx']
+        extensions: ['', '.webpack.js', '.web.js', '.js', '.ts', '.tsx']
     },
     module: {
         loaders: [
