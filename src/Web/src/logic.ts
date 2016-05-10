@@ -12,6 +12,13 @@ function appendWin32Code(result: ErrorMessage[], data: Data, code: number) {
     }
 }
 
+export function ntStatusUnwrapWin32(code: number): number {
+    if ((code & 0xFFFF0000) === 0xC0070000) {
+        return code & 0xFFFF;
+    }
+    return NaN;
+}
+
 function appendNtStatusCode(result: ErrorMessage[], data: Data, code: number) {
     // Do a direct NTSTATUS lookup first.
     const err = _.find(data.ntStatus, x => x.code === code);
@@ -20,9 +27,32 @@ function appendNtStatusCode(result: ErrorMessage[], data: Data, code: number) {
     }
 
     // If this is an NTSTATUS wrapper around a Win32 error, include the Win32 error as well.
-    if ((code & 0xFFFF0000) === 0xC0070000) {
-        appendWin32Code(result, data, code & 0xFFFF);
+    const win32Code = ntStatusUnwrapWin32(code);
+    if (!isNaN(win32Code)) {
+        appendWin32Code(result, data, win32Code);
     }
+}
+
+export function hresultUnwrapWin32(code: number): number {
+    if ((code & 0xFFFF0000) === 0x80070000) {
+        return code & 0xFFFF;
+    }
+    return NaN;
+}
+
+export function hresultUnwrapNtStatus(code: number): number {
+    if ((code & 0x10000000) === 0x10000000) {
+        return code & 0xEFFFFFFF;
+    }
+    return NaN;
+}
+
+export function hresultUnwrapFilterManagerNtStatus(code: number): number[] {
+    if ((code & 0x1FFF0000) === 0x001F000) {
+        const ntCodeAndFacility = (code & 0x8000FFFF) | 0x001C0000;
+        return [ntCodeAndFacility, ntCodeAndFacility | 0x40000000];
+    }
+    return undefined;
 }
 
 function appendHresultCode(result: ErrorMessage[], data: Data, code: number) {
@@ -33,16 +63,24 @@ function appendHresultCode(result: ErrorMessage[], data: Data, code: number) {
     }
 
     // If this is an HRESULT wrapper around a Win32 error, include the Win32 error as well.
-    if ((code & 0xFFFF0000) === 0x80070000) {
-        appendWin32Code(result, data, code & 0xFFFF);
+    const win32Code = hresultUnwrapWin32(code);
+    if (!isNaN(win32Code)) {
+        appendWin32Code(result, data, win32Code);
     }
 
     // If this is an HRESULT wrapper around an NTSTATUS, include the NTSTATUS error as well (which can also include NTSTATUS wrappers).
-    if ((code & 0x10000000) === 0x10000000) {
-        appendNtStatusCode(result, data, code & 0xEFFFFFFF);
+    const ntStatusCode = hresultUnwrapNtStatus(code);
+    if (!isNaN(ntStatusCode)) {
+        appendNtStatusCode(result, data, ntStatusCode);
     }
 
-    // TODO: FILTER_HRESULT_FROM_FLT_NTSTATUS, HRESULT_FROM_SETUPAPI, others?
+    // The filter manager has its own HRESULT wrapper around NTSTATUS system.
+    const filterManagerNtStatusCodes = hresultUnwrapFilterManagerNtStatus(code);
+    if (filterManagerNtStatusCodes) {
+        for (let ntCode of filterManagerNtStatusCodes) {
+            appendNtStatusCode(result, data, ntCode);
+        }
+    }
 }
 
 /**
