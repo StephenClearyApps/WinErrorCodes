@@ -25,7 +25,7 @@ var config = {
 };
 
 var uglifyJs = new webpack.optimize.UglifyJsPlugin({ comments: /a^/ });
-var defines = new webpack.DefinePlugin({ DEBUG: debug });
+var defines = new webpack.DefinePlugin({ DEBUG: debug, 'process.env.NODE_ENV': debug ? '"development"' : '"production"' });
 
 var webpackConfig = {
     entry: config.paths.mainJs,

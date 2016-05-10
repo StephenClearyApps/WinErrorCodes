@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "prod": "set NODE_ENV=production&&gulp",
+    "prod-serve": "set NODE_ENV=production&&gulp serve",
     "dev": "set NODE_ENV=&&gulp"
   },
   "author": "Stephen Cleary",
