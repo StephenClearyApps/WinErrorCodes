@@ -9,7 +9,8 @@ import { Home } from './home';
 import { store } from './store';
 import { Actions } from './actions';
 
-$(() => {
+Actions.loadData('data.json');
+window.onload = () => {
     render((
         <Provider store={store}>
             <Router history={browserHistory}>
@@ -18,7 +19,5 @@ $(() => {
                 </Route>
             </Router>
         </Provider>
-    ), $("#app")[0]);
-
-    Actions.loadData('data.json');
-});
+    ), document.getElementById("app"));
+};
