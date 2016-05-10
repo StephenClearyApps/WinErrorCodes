@@ -33,6 +33,7 @@
     <TypeScriptCompile Include="src\actions.ts" />
     <TypeScriptCompile Include="src\helpers.ts" />
     <TypeScriptCompile Include="src\home.tsx" />
+    <TypeScriptCompile Include="src\logic.ts" />
     <TypeScriptCompile Include="src\main.tsx" />
     <TypeScriptCompile Include="src\store.ts" />
     <TypeScriptCompile Include="typings\browser.d.ts" />

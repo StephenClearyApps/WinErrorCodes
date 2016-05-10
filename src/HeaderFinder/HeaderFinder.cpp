@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 #include <txdtc.h>
+#include <winerror.h>
+#include <ntstatus.h>
 
 int main()
 {
