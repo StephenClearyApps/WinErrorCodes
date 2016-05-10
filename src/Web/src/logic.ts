@@ -5,10 +5,12 @@ export type QueryType = 'win32' | 'hresult' | 'ntstatus';
 const validHexNumber = /^(0x)?[0-9A-F]{1,8}$/i;
 const validDecNumber = /^-?[0-9]+$/;
 
-function appendWin32Code(result: ErrorMessage[], data: Data, code: number) {
+type LogicCallback = (errorMessage: ErrorMessage) => void;
+
+export function handleWin32Code(callback: LogicCallback, data: Data, code: number) {
     const err = _.find(data.win32, x => x.code === code);
-    if (err && result.indexOf(err) < 0) {
-        result.push(err);
+    if (err) {
+        callback(err);
     }
 }
 
@@ -19,17 +21,17 @@ export function ntStatusUnwrapWin32(code: number): number {
     return NaN;
 }
 
-function appendNtStatusCode(result: ErrorMessage[], data: Data, code: number) {
+export function handleNtStatusCode(callback: LogicCallback, data: Data, code: number) {
     // Do a direct NTSTATUS lookup first.
     const err = _.find(data.ntStatus, x => x.code === code);
-    if (err && result.indexOf(err) < 0) {
-        result.push(err);
+    if (err) {
+        callback(err);
     }
 
     // If this is an NTSTATUS wrapper around a Win32 error, include the Win32 error as well.
     const win32Code = ntStatusUnwrapWin32(code);
     if (!isNaN(win32Code)) {
-        appendWin32Code(result, data, win32Code);
+        handleWin32Code(callback, data, win32Code);
     }
 }
 
@@ -55,30 +57,30 @@ export function hresultUnwrapFilterManagerNtStatus(code: number): number[] {
     return undefined;
 }
 
-function appendHresultCode(result: ErrorMessage[], data: Data, code: number) {
+export function handleHresultCode(callback: LogicCallback, data: Data, code: number) {
     // Do a direct HRESULT lookup first.
     const err = _.find(data.hresult, x => x.code === code);
-    if (err && result.indexOf(err) < 0) {
-        result.push(err);
+    if (err) {
+        callback(err);
     }
 
     // If this is an HRESULT wrapper around a Win32 error, include the Win32 error as well.
     const win32Code = hresultUnwrapWin32(code);
     if (!isNaN(win32Code)) {
-        appendWin32Code(result, data, win32Code);
+        handleWin32Code(callback, data, win32Code);
     }
 
     // If this is an HRESULT wrapper around an NTSTATUS, include the NTSTATUS error as well (which can also include NTSTATUS wrappers).
     const ntStatusCode = hresultUnwrapNtStatus(code);
     if (!isNaN(ntStatusCode)) {
-        appendNtStatusCode(result, data, ntStatusCode);
+        handleNtStatusCode(callback, data, ntStatusCode);
     }
 
-    // The filter manager has its own HRESULT wrapper around NTSTATUS system.
+    // The filter manager has its own HRESULT-wrapper-around-NTSTATUS system.
     const filterManagerNtStatusCodes = hresultUnwrapFilterManagerNtStatus(code);
     if (filterManagerNtStatusCodes) {
         for (let ntCode of filterManagerNtStatusCodes) {
-            appendNtStatusCode(result, data, ntCode);
+            handleNtStatusCode(callback, data, ntCode);
         }
     }
 }
@@ -89,7 +91,7 @@ function appendHresultCode(result: ErrorMessage[], data: Data, code: number) {
  * @param type The type of the user query, if known. This may be null, undefined, or an empty string to indicate the type is unknown.
  * @param data The database of known error messages.
  */
-export function evaluate(query: string, type: QueryType | void, data: Data): ErrorMessage[] {
+export function search(query: string, type: QueryType | void, data: Data): ErrorMessage[] {
     const result: ErrorMessage[] = [];
 
     const mayBeWin32 = type === 'win32' || !type;
@@ -100,17 +102,23 @@ export function evaluate(query: string, type: QueryType | void, data: Data): Err
     const isValidHexNumber = validHexNumber.test(query);
     const isValidDecNumber = validDecNumber.test(query);
     if (isValidHexNumber || isValidDecNumber) {
+        const appendCallback: LogicCallback = err => {
+            if (result.indexOf(err) < 0) {
+                result.push(err);
+            }
+        };
+
         // Attempt to match as a hex number first.
         if (isValidHexNumber) {
             const code = parseInt(query, 16);
             if (mayBeWin32) {
-                appendWin32Code(result, data, code);
+                handleWin32Code(appendCallback, data, code);
             }
             if (mayBeHresult) {
-                appendHresultCode(result, data, code);
+                handleHresultCode(appendCallback, data, code);
             }
             if (mayBeNtStatus) {
-                appendNtStatusCode(result, data, code);
+                handleNtStatusCode(appendCallback, data, code);
             }
         }
 
@@ -118,19 +126,14 @@ export function evaluate(query: string, type: QueryType | void, data: Data): Err
         if (isValidDecNumber) {
             const code = parseInt(query, 10);
             if (mayBeWin32) {
-                appendWin32Code(result, data, code);
+                handleWin32Code(appendCallback, data, code);
             }
             if (mayBeHresult) {
-                appendHresultCode(result, data, code);
+                handleHresultCode(appendCallback, data, code);
             }
             if (mayBeNtStatus) {
-                appendNtStatusCode(result, data, code);
+                handleNtStatusCode(appendCallback, data, code);
             }
-        }
-
-        // If there are any results, then return only numeric hits.
-        if (result.length) {
-            return result;
         }
     }
 
