@@ -2,7 +2,7 @@
 import { spread } from './helpers';
 import { ActionTypes, DataLoadDoneAction, DataLoadErrorAction } from './action-types';
 
-interface State {
+export interface State {
     error: Error;
     data: Data;
 }

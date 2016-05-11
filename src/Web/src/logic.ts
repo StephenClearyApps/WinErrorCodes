@@ -49,12 +49,11 @@ export function hresultUnwrapNtStatus(code: number): number {
     return NaN;
 }
 
-export function hresultUnwrapFilterManagerNtStatus(code: number): number[] {
+export function hresultUnwrapFilterManagerNtStatus(code: number): number {
     if ((code & 0x1FFF0000) === 0x001F000) {
-        const ntCodeAndFacility = (code & 0x8000FFFF) | 0x001C0000;
-        return [ntCodeAndFacility, ntCodeAndFacility | 0x40000000];
+        return (code & 0x8000FFFF) | 0x401C0000;
     }
-    return undefined;
+    return NaN;
 }
 
 export function handleHresultCode(callback: LogicCallback, data: Data, code: number) {
@@ -77,11 +76,10 @@ export function handleHresultCode(callback: LogicCallback, data: Data, code: num
     }
 
     // The filter manager has its own HRESULT-wrapper-around-NTSTATUS system.
-    const filterManagerNtStatusCodes = hresultUnwrapFilterManagerNtStatus(code);
-    if (filterManagerNtStatusCodes) {
-        for (let ntCode of filterManagerNtStatusCodes) {
-            handleNtStatusCode(callback, data, ntCode);
-        }
+    //  See FILTER_FLT_NTSTATUS_FROM_HRESULT (in ntstatus.h) and FILTER_HRESULT_FROM_FLT_NTSTATUS (in winerror.h)
+    const filterManagerNtStatusCode = hresultUnwrapFilterManagerNtStatus(code);
+    if (!isNaN(filterManagerNtStatusCode)) {
+        handleNtStatusCode(callback, data, filterManagerNtStatusCode);
     }
 }
 
