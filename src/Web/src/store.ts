@@ -1,9 +1,7 @@
 ﻿import { createStore, applyMiddleware, compose } from 'redux';
 import thunk from 'redux-thunk';
 import { handleActions } from 'redux-actions';
-import { ActionTypes } from './actions';
-
-const reducer = handleActions({}, {});
+import { reducer } from './reducer';
 
 const middlewareStoreEnhancer = applyMiddleware(thunk);
 const devToolsEnhancer = (DEBUG && (window as any).devToolsExtension) ? (window as any).devToolsExtension() : undefined;

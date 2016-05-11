@@ -85,10 +85,12 @@ gulp.task('generate', function (done) {
     });
 });
 
-gulp.task('build', ['html', 'css', 'js', 'generate']);
+gulp.task('build-src', ['html', 'css', 'js']);
+
+gulp.task('build', ['build-src', 'generate']);
 
 gulp.task('watch', ['build'], function () {
-    gulp.watch(config.paths.allSrc, ['build']);
+    gulp.watch(config.paths.allSrc, ['build-src']);
 });
 
 gulp.task('serve', ['build'], function() {

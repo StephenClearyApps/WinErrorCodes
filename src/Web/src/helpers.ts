@@ -17,3 +17,7 @@ export function fetchJson<T>(url: string): Promise<T> {
         .then(checkStatus)
         .then(parseJson);
 }
+
+export function spread<T>(source: T): T {
+    return Object.assign({}, source);
+}
