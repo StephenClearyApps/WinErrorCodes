@@ -71,6 +71,8 @@ namespace Win32ErrorTable
             Result = Result && Validation.CheckResults(ntdllMessages, true);
 
             Result = Result && Validation.CrossCheckNtStatusResults(ntstatus, ntdllMessages, false);
+
+            NtStatusH.WellKnownValues(ntstatus);
             return ntstatus;
         }
 

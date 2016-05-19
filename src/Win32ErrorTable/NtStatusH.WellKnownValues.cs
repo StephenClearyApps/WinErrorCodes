@@ -46,25 +46,55 @@ namespace Win32ErrorTable
         /// <summary>
         /// Seed known values into NtStatus.h results.
         /// </summary>
-        private void Seed()
+        public static void WellKnownValues(Results results)
         {
             // Wait completion status codes.
             for (int i = 0; i < 64; ++i)
-                ntstatus.Add(new ErrorMessage((uint)i, new List<string> { "STATUS_WAIT_0 + " + i }, "The object at index " + i + " has satisfied the wait."));
+            {
+                var id = i == 0 ? "STATUS_WAIT_0" : "STATUS_WAIT_0 + " + i;
+                var message = "The object at index " + i + " has satisfied the wait.";
+                var existing = results.NtStatusErrors.FirstOrDefault(x => x.Code == i);
+                if (existing == null)
+                    results.NtStatusErrors.Add(new ErrorMessage((uint)i, new List<string> { id }, message));
+                else
+                {
+                    if (i == 0)
+                    {
+                        existing.Ids.Add(id);
+                        existing.Text += "\nor: " + message;
+                    }
+                    else
+                    {
+                        existing.Ids.Insert(0, id);
+                        existing.Text = message;
+                    }
+                }
+            }
 
             // Wait abandoned status codes.
             for (int i = 128; i < 192; ++i)
-                ntstatus.Add(new ErrorMessage((uint)i, new List<string> { "STATUS_ABANDONED + " + (i - 128) }, "The object at index " + i + " has been abandoned."));
+            {
+                var id0 = i == 128 ? "STATUS_ABANDONED" : "STATUS_ABANDONED + " + (i - 128);
+                var id1 = i == 128 ? "STATUS_ABANDONED_WAIT_0" : "STATUS_ABANDONED_WAIT_0 + " + (i - 128);
+                var message = "The object at index " + (i - 128) + " has been abandoned.";
+                var existing = results.NtStatusErrors.FirstOrDefault(x => x.Code == i);
+                if (existing == null)
+                    results.NtStatusErrors.Add(new ErrorMessage((uint)i, new List<string> { id0, id1 }, message));
+                else
+                {
+                    if (!existing.Ids.Contains(id1))
+                        existing.Ids.Insert(0, id1);
+                    existing.Ids.Insert(0, id0);
+                    existing.Text = message;
+                }
+            }
 
-            ntstatus.Add(new ErrorMessage(0xC000042E, new List<string> { "STATUS_VERSION_PARSE_ERROR" }, "A version number could not be parsed.")); // ntstatus.h:8964
-        }
+            results.NtStatusErrors.Add(new ErrorMessage(0xC000042E, new List<string> { "STATUS_VERSION_PARSE_ERROR" }, "A version number could not be parsed.")); // ntstatus.h:8964
 
-        private void PostSeed()
-        {
-            var facilityNames = facilities.SelectMany(x => x.Names);
+            var facilityNames = results.NtStatusFacilities.SelectMany(x => x.Names);
 
             var system = new FacilityName("", "System");
-            facilities.Add(new Facility(0, new List<FacilityName> { system }));
+            results.NtStatusFacilities.Add(new Facility(0, new List<FacilityName> { system }));
             system.Range.AddChildRange(new Range(0x030D, 0x0320, "Storage copy protection")); // ntstatus.h:8085
             system.Range.AddChildRange(new Range(0x0323, 0x0350, "Non-storage copy protection")); // ntstatus.h:8118
             system.Range.AddChildRange(new Range(0x0390, 0x0400, "Smart card")); // ntstatus.h:8582
@@ -91,7 +121,7 @@ namespace Win32ErrorTable
             tpm.AddChildRange(new Range(0x0400, 0x0500, "TPM vendor specific hardware errors"));
             tpm.AddChildRange(new Range(0x0800, 0x0900, "TPM non-fatal hardware errors"));
 
-            facilities.Add(new Facility(0x3A, new List<FacilityName> { new FacilityName("", "vhdparser (vhdparser.sys)") }));
+            results.NtStatusFacilities.Add(new Facility(0x3A, new List<FacilityName> { new FacilityName("", "vhdparser (vhdparser.sys)") }));
         }
     }
 }

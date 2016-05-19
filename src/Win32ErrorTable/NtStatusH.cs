@@ -46,8 +46,6 @@ namespace Win32ErrorTable
 
         public Results Process()
         {
-            Seed();
-
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Windows Kits", "10", "Include");
             var selected = Directory.EnumerateDirectories(path).Select(dir => new { dir, ver = TryParseVersion(Path.GetFileName(dir)) }).OrderByDescending(x => x.ver).First();
             path = selected.dir;
@@ -136,12 +134,11 @@ namespace Win32ErrorTable
 
                 Console.WriteLine("\"" + line + "\",");
                 System.Windows.Forms.Clipboard.SetText("\"" + line + "\",");
-                Console.ReadKey();
+                //Console.ReadKey();
                 messageId = null;
                 messageText = null;
             }
 
-            PostSeed();
             return new Results(null, null, null, ntstatus, facilities);
         }
     }

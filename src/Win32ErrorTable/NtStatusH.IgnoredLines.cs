@@ -57,6 +57,7 @@ namespace Win32ErrorTable
             "Define the facility codes",
             "#define FACILITY_MAXIMUM_VALUE           0xEB",
             "Define the severity codes",
+            "#define STATUS_WAIT_0                           ((NTSTATUS)0x00000000L)",
             "The success status codes 128 - 191 are reserved for wait completion",
             "status with an abandoned mutant object.",
             "#define STATUS_ABANDONED                        ((NTSTATUS)0x00000080L)",

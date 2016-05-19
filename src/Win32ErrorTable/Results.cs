@@ -70,7 +70,7 @@ namespace Win32ErrorTable
         public IList<string> Ids { get; }
 
         [JsonProperty("t")]
-        public string Text { get; }
+        public string Text { get; set; }
     }
 
     public sealed class Facility

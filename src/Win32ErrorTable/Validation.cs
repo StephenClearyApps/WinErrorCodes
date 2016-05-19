@@ -93,9 +93,9 @@ namespace Win32ErrorTable
 
             // Display all shared codes.
             foreach (var facility in results.HResultFacilities.Where(x => x.Names.Count > 1))
-                WriteLine(silent, "HRESULT Facility " + facility.Value + " shared between " + string.Join(" ", facility.Names));
+                WriteLine(silent, "HRESULT Facility " + facility.Value + " shared between " + string.Join(" ", facility.Names.Select(x => x.Name)));
             foreach (var facility in results.NtStatusFacilities.Where(x => x.Names.Count > 1))
-                WriteLine(silent, "NTSTATUS Facility " + facility.Value + " shared between " + string.Join(" ", facility.Names));
+                WriteLine(silent, "NTSTATUS Facility " + facility.Value + " shared between " + string.Join(" ", facility.Names.Select(x => x.Name)));
             foreach (var win32 in results.Win32Errors.Where(x => x.Ids.Count > 1))
                 WriteLine(silent, "Win32 " + win32.Code + " shared between " + string.Join(" ", win32.Ids));
             foreach (var hresult in results.HResultErrors.Where(x => x.Ids.Count > 1))

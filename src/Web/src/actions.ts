@@ -15,7 +15,8 @@ function transformErrorMessage(errorMessage: ErrorMessageDto, type: ErrorMessage
 function transformFacilityName(facilityName: FacilityNameDto): FacilityName {
     return {
         name: facilityName.n,
-        range: transformRange(facilityName.r)
+        range: transformRange(facilityName.r),
+        notes: facilityName.o
     }
 }
 

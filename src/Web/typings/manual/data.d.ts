@@ -33,8 +33,11 @@ interface FacilityName {
     /** The human-readable identifier for this facility name. */
     name: string;
 
-    /** The code range for this facility. */
+    /** The code range for this facility. The description of this facility is stored in the description for this range. */
     range: CodeRange;
+
+    /** Notes for this facility. */
+    notes: string;
 }
 
 /** A range of defined values with a semantic meaning. This is generally a subset of a facility. Ranges do not overlap and are never empty. */
@@ -101,6 +104,9 @@ interface FacilityNameDto {
 
     /** The code range for this facility. */
     r: CodeRangeDto;
+
+    /** Notes for this facility. */
+    o: string;
 }
 
 /** A range of defined values with a semantic meaning. This is generally a subset of a facility. Ranges do not overlap and are never empty. */

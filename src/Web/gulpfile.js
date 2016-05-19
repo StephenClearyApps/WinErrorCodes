@@ -1,4 +1,4 @@
-﻿/// <binding BeforeBuild='build' />
+/// <binding />
 var gulp = require('gulp');
 var util = require('gulp-util');
 var plumber = require('gulp-plumber');
