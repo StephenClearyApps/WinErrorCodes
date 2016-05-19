@@ -51,6 +51,14 @@ namespace Win32ErrorTable
         private readonly List<ErrorMessage> hresult = new List<ErrorMessage>();
         private readonly List<Facility> facilities = new List<Facility>();
 
+        private static Version TryParseVersion(string s)
+        {
+            Version result;
+            if (Version.TryParse(s, out result))
+                return result;
+            return null;
+        }
+
         public Results Process()
         {
             // Seed some well-known HRESULT values.
@@ -59,7 +67,7 @@ namespace Win32ErrorTable
             hresult.Add(CreateMessage(1, "S_FALSE", new[] { "Some methods use S_FALSE to mean, roughly, a negative condition that is not a failure. It can also indicate a \"no-op\" - the method succeeded, but had no effect." }));
 
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Windows Kits", "10", "Include");
-            var selected = Directory.EnumerateDirectories(path).Select(dir => new { dir, ver = Version.Parse(Path.GetFileName(dir)) }).OrderByDescending(x => x.ver).First();
+            var selected = Directory.EnumerateDirectories(path).Select(dir => new { dir, ver = TryParseVersion(Path.GetFileName(dir)) }).OrderByDescending(x => x.ver).First();
             path = selected.dir;
             path = Path.Combine(path, "shared");
             var lines = File.ReadAllLines(Path.Combine(path, "winerror.h"));
@@ -152,9 +160,9 @@ namespace Win32ErrorTable
                         var value = uint.Parse(match.Groups[2].Value);
                         var existing = facilities.FirstOrDefault(x => x.Value == value);
                         if (existing == null)
-                            facilities.Add(new Facility(value, new List<string> { match.Groups[1].Value }));
+                            facilities.Add(new Facility(value, new List<FacilityName> { new FacilityName(match.Groups[1].Value, "") }));
                         else
-                            existing.Names.Add(match.Groups[1].Value);
+                            existing.Names.Add(new FacilityName(match.Groups[1].Value, ""));
                         continue;
                     }
 

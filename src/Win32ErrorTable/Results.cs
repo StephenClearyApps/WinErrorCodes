@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Nito.Comparers;
 
 namespace Win32ErrorTable
 {
@@ -16,10 +17,14 @@ namespace Win32ErrorTable
             HResultFacilities = hResultFacilities ?? new List<Facility>();
             NtStatusErrors = ntStatusErrors ?? new List<ErrorMessage>();
             NtStatusFacilities = ntStatusFacilities ?? new List<Facility>();
+            Win32Range = new Range(0, 0xFFFF, null);
         }
 
         [JsonProperty("w")]
         public List<ErrorMessage> Win32Errors { get; }
+
+        [JsonProperty("wr")]
+        public Range Win32Range { get; }
 
         [JsonProperty("h")]
         public List<ErrorMessage> HResultErrors { get; }
@@ -45,6 +50,7 @@ namespace Win32ErrorTable
             HResultFacilities.AddRange(other.HResultFacilities);
             NtStatusErrors.AddRange(other.NtStatusErrors);
             NtStatusFacilities.AddRange(other.NtStatusFacilities);
+            Win32Range.MergeWith(other.Win32Range);
         }
     }
 
@@ -69,7 +75,7 @@ namespace Win32ErrorTable
 
     public sealed class Facility
     {
-        public Facility(uint value, IList<string> names)
+        public Facility(uint value, IList<FacilityName> names)
         {
             Value = value;
             Names = names;
@@ -79,6 +85,72 @@ namespace Win32ErrorTable
         public uint Value { get; }
 
         [JsonProperty("n")]
-        public IList<string> Names { get; }
+        public IList<FacilityName> Names { get; }
+    }
+
+    public sealed class FacilityName
+    {
+        public FacilityName(string name, string description, string notes = "")
+        {
+            Name = name;
+            Range = new Range(0, 0xFFFF, description);
+            Notes = notes;
+        }
+
+        [JsonProperty("n")]
+        public string Name { get; }
+
+        [JsonProperty("r")]
+        public Range Range { get; }
+
+        [JsonProperty("o")]
+        public string Notes { get; }
+    }
+
+    public sealed class Range
+    {
+        private readonly List<Range> _childRanges;
+
+        public Range(uint lowerBound, uint upperBound, string description)
+        {
+            LowerBound = lowerBound;
+            UpperBound = upperBound;
+            Description = description ?? "";
+            _childRanges = new List<Range>();
+            if (LowerBound >= UpperBound)
+                throw new InvalidOperationException("LowerBound must be smaller than UpperBound");
+        }
+
+        [JsonProperty("d")]
+        public string Description { get; set; }
+
+        [JsonProperty("l")]
+        public uint LowerBound { get; }
+
+        [JsonProperty("u")]
+        public uint UpperBound { get; }
+
+        [JsonProperty("c")]
+        public IReadOnlyList<Range> ChildRanges => _childRanges;
+
+        public void AddChildRange(Range child)
+        {
+            if (child.LowerBound < LowerBound || child.UpperBound > UpperBound)
+                throw new InvalidOperationException("Child is outside range of parent");
+            if (ChildRanges.Any(existingChild => existingChild.LowerBound < child.UpperBound && existingChild.UpperBound > child.LowerBound))
+                throw new InvalidOperationException("Overlapping child ranges");
+            var index = _childRanges.BinarySearch(child, ComparerBuilder.For<Range>().OrderBy(x => x.LowerBound));
+            if (index >= 0)
+                throw new InvalidOperationException("Comparer detected overlapping ranges");
+            _childRanges.Insert(~index, child);
+        }
+
+        public void MergeWith(Range other)
+        {
+            if (other.LowerBound != LowerBound || other.UpperBound != UpperBound)
+                throw new InvalidOperationException("Merging incompatible ranges");
+            foreach (var child in other.ChildRanges)
+                AddChildRange(child);
+        }
     }
 }

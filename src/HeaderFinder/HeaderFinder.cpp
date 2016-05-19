@@ -5,6 +5,7 @@
 #include <txdtc.h>
 #include <winerror.h>
 #include <ntstatus.h>
+//#include <hv_api.h>
 
 int main()
 {

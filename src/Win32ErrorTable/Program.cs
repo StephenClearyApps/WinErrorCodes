@@ -25,7 +25,14 @@ namespace Win32ErrorTable
                 results.MergeWith(Win32());
                 results.MergeWith(NtStatus());
 
+                // https://github.com/torvalds/linux/blob/6658be6ad728c347df33b8593b75aafa3c52eeba/drivers/staging/hv/include/HvStatus.h
                 // TODO: other Win32/HRESULT values.
+                // TODO: MSI.
+                // TODO: AdsErr.h, asferr.h, BitsMsg.h, CDOSysErr.h, CiError.h, dlnaerror.h, ehstormsg.h, Filterr.h, fltWinError.h, fsrmerr.h,
+                //   functiondiscoveryerror.h, imapi2error.h, imapi2fserror.h, IntShCut.h, iscsierr.h, IssPer16.h, Mdmsg.h, Mferror.h, Mq.h, ndattrib.h,
+                //   netevent.h, nserror.h, NtDsBMsg.h, ntiologc.h, oledberr.h, rtcerr.h, SCardErr.h, slerror.h, syncregistrationerrors.h, Tapi3Err.h,
+                //   urlmon.h, vdserr.h, vfwmsgs.h, vsserror.h, wcmerrors.h, WdsCpMsg.h, wdsmcerr.h, WdsTptMgmtMsg.h, winbio_err.h, WindowsSearchErrors.h,
+                //   wsbapperror.h, wsbonlineerror.h, wsmerror.h, wuerror.h
 
                 Result = Result && Validation.CheckResults(results, false);
                 Export.Json(results);
