@@ -1,10 +1,15 @@
 ﻿import { handleActions } from 'redux-actions';
 import { spread } from './helpers';
 import { ActionTypes, DataLoadDoneAction, DataLoadErrorAction } from './action-types';
+import { Location } from '~react-router~history/history';
 
 export interface State {
     error: Error;
     data: Data;
+}
+
+export interface RoutedState extends State {
+    location: Location;
 }
 
 const defaultState: State = {
