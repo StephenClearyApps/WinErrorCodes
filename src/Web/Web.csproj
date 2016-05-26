@@ -43,10 +43,12 @@
     <TypeScriptCompile Include="src\main.tsx" />
     <TypeScriptCompile Include="src\reducer.ts" />
     <TypeScriptCompile Include="src\store.ts" />
-    <TypeScriptCompile Include="typings\browser.d.ts" />
+    <TypeScriptCompile Include="typings\index.d.ts" />
     <TypeScriptCompile Include="typings\manual\actions.d.ts" />
     <TypeScriptCompile Include="src\typings\data.ts" />
     <TypeScriptCompile Include="typings\manual\globals.d.ts" />
+    <TypeScriptCompile Include="typings\manual\vendor\react-helmet.d.ts" />
+    <TypeScriptCompile Include="typings\manual\vendor\react-disqus-thread.d.ts" />
     <TypeScriptCompile Include="typings\manual\vendor\redux-actions.d.ts" />
     <TypeScriptCompile Include="typings\manual\vendor\redux-thunk.d.ts" />
   </ItemGroup>

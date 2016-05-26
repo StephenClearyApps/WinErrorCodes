@@ -235,9 +235,8 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 
-/src/Web/typings/browser
-/src/Web/typings/browser.d.ts
-/src/Web/typings/main
-/src/Web/typings/main.d.ts
 *.VC.db
 /src/Web/build
+/src/Web/typings/globals
+/src/Web/typings/modules
+/src/Web/typings/index.d.ts
