@@ -26,7 +26,7 @@ namespace Win32ErrorTable
 
         private static readonly Regex RangeRegex = new Regex(@"^#define (" + Identifier + @"_(E_FIRST|E_LAST|S_FIRST|S_LAST))\s+[0-9A-Fa-fxLHRESULT()]+$");
 
-        private static readonly Regex FacilityRegex = new Regex(@"^#define FACILITY_([A-Za-z_0-9]+)\s+(\d+)$");
+        private static readonly Regex FacilityRegex = new Regex(@"^#define (FACILITY_[A-Za-z_0-9]+)\s+(\d+)$");
         private static readonly Regex SeverityRegex = new Regex(@"^#define SEVERITY_([A-Za-z_0-9]+)\s+(\d+)$");
 
         private static readonly Regex MessageIdRegex = new Regex(@"^MessageId: (" + Identifier + @")$");

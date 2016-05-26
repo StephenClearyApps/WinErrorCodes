@@ -1,86 +1,107 @@
 ﻿import * as _ from 'lodash';
+import { Data, ErrorMessage } from './typings/data';
+import { toUInt32 } from './helpers';
 
 export type QueryType = 'win32' | 'hresult' | 'ntstatus';
 
 const validHexNumber = /^(0x)?[0-9A-F]{1,8}$/i;
 const validDecNumber = /^-?[0-9]+$/;
 
-type LogicCallback = (errorMessage: ErrorMessage) => void;
-
-export function handleWin32Code(callback: LogicCallback, data: Data, code: number) {
+/**
+ * Matches the code against known Win32 errors, and returns 0-1 matches.
+ */
+export function appendWin32Codes(result: ErrorMessage[], data: Data, code: number) {
     const err = _.find(data.win32, x => x.code === code);
-    if (err) {
-        callback(err);
+    if (err && result.indexOf(err) < 0) {
+        result.push(err);
     }
 }
 
 export function ntStatusUnwrapWin32(code: number): number {
-    if ((code & 0xFFFF0000) === 0xC0070000) {
-        return code & 0xFFFF;
+    if (toUInt32(code & 0xFFFF0000) === 0xC0070000) {
+        return toUInt32(code & 0xFFFF);
     }
     return NaN;
 }
 
-export function handleNtStatusCode(callback: LogicCallback, data: Data, code: number) {
+/**
+ * Matches the code against known NTSTATUS errors, and returns 0-2 matches.
+ */
+export function appendNtStatusCodes(result: ErrorMessage[], data: Data, code: number) {
     // Do a direct NTSTATUS lookup first.
     const err = _.find(data.ntStatus, x => x.code === code);
-    if (err) {
-        callback(err);
+    if (err && result.indexOf(err) < 0) {
+        result.push(err);
     }
 
     // If this is an NTSTATUS wrapper around a Win32 error, include the Win32 error as well.
     const win32Code = ntStatusUnwrapWin32(code);
     if (!isNaN(win32Code)) {
-        handleWin32Code(callback, data, win32Code);
+        appendWin32Codes(result, data, win32Code);
     }
 }
 
 export function hresultUnwrapWin32(code: number): number {
-    if ((code & 0xFFFF0000) === 0x80070000) {
-        return code & 0xFFFF;
+    if (toUInt32(code & 0xFFFF0000) === 0x80070000) {
+        return toUInt32(code & 0xFFFF);
     }
     return NaN;
 }
 
 export function hresultUnwrapNtStatus(code: number): number {
-    if ((code & 0x10000000) === 0x10000000) {
-        return code & 0xEFFFFFFF;
+    if (toUInt32(code & 0x10000000) === 0x10000000) {
+        return toUInt32(code & 0xEFFFFFFF);
     }
     return NaN;
 }
 
 export function hresultUnwrapFilterManagerNtStatus(code: number): number {
-    if ((code & 0x1FFF0000) === 0x001F000) {
-        return (code & 0x8000FFFF) | 0x401C0000;
+    if (toUInt32(code & 0x1FFF0000) === 0x001F000) {
+        return toUInt32(toUInt32(code & 0x8000FFFF) | 0x401C0000);
     }
     return NaN;
 }
 
-export function handleHresultCode(callback: LogicCallback, data: Data, code: number) {
+/**
+ * Matches the code against known HRESULT values, and returns 0-3 matches.
+ */
+export function appendHresultCodes(result: ErrorMessage[], data: Data, code: number) {
     // Do a direct HRESULT lookup first.
     const err = _.find(data.hresult, x => x.code === code);
-    if (err) {
-        callback(err);
+    if (err && result.indexOf(err) < 0) {
+        result.push(err);
     }
 
     // If this is an HRESULT wrapper around a Win32 error, include the Win32 error as well.
     const win32Code = hresultUnwrapWin32(code);
     if (!isNaN(win32Code)) {
-        handleWin32Code(callback, data, win32Code);
+        appendWin32Codes(result, data, win32Code);
     }
 
     // If this is an HRESULT wrapper around an NTSTATUS, include the NTSTATUS error as well (which can also include NTSTATUS wrappers).
     const ntStatusCode = hresultUnwrapNtStatus(code);
     if (!isNaN(ntStatusCode)) {
-        handleNtStatusCode(callback, data, ntStatusCode);
+        appendNtStatusCodes(result, data, ntStatusCode);
     }
 
     // The filter manager has its own HRESULT-wrapper-around-NTSTATUS system.
     //  See FILTER_FLT_NTSTATUS_FROM_HRESULT (in ntstatus.h) and FILTER_HRESULT_FROM_FLT_NTSTATUS (in winerror.h)
     const filterManagerNtStatusCode = hresultUnwrapFilterManagerNtStatus(code);
     if (!isNaN(filterManagerNtStatusCode)) {
-        handleNtStatusCode(callback, data, filterManagerNtStatusCode);
+        appendNtStatusCodes(result, data, filterManagerNtStatusCode);
     }
+}
+
+export function findCodes(data: Data, type: QueryType, code: number): ErrorMessage[] {
+    const result: ErrorMessage[] = [];
+    if (type === 'win32') {
+        appendWin32Codes(result, data, code);
+    } else if (type === 'ntstatus') {
+        appendNtStatusCodes(result, data, code);
+    } else if (type === 'hresult') {
+        appendHresultCodes(result, data, code);
+    }
+    return result;
 }
 
 /**
@@ -100,23 +121,17 @@ export function search(query: string, type: QueryType | void, data: Data): Error
     const isValidHexNumber = validHexNumber.test(query);
     const isValidDecNumber = validDecNumber.test(query);
     if (isValidHexNumber || isValidDecNumber) {
-        const appendCallback: LogicCallback = err => {
-            if (result.indexOf(err) < 0) {
-                result.push(err);
-            }
-        };
-
         // Attempt to match as a hex number first.
         if (isValidHexNumber) {
             const code = parseInt(query, 16);
             if (mayBeWin32) {
-                handleWin32Code(appendCallback, data, code);
+                appendWin32Codes(result, data, code);
             }
             if (mayBeHresult) {
-                handleHresultCode(appendCallback, data, code);
+                appendHresultCodes(result, data, code);
             }
             if (mayBeNtStatus) {
-                handleNtStatusCode(appendCallback, data, code);
+                appendNtStatusCodes(result, data, code);
             }
         }
 
@@ -124,13 +139,13 @@ export function search(query: string, type: QueryType | void, data: Data): Error
         if (isValidDecNumber) {
             const code = parseInt(query, 10);
             if (mayBeWin32) {
-                handleWin32Code(appendCallback, data, code);
+                appendWin32Codes(result, data, code);
             }
             if (mayBeHresult) {
-                handleHresultCode(appendCallback, data, code);
+                appendHresultCodes(result, data, code);
             }
             if (mayBeNtStatus) {
-                handleNtStatusCode(appendCallback, data, code);
+                appendNtStatusCodes(result, data, code);
             }
         }
     }

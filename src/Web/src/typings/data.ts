@@ -1,11 +1,11 @@
-﻿declare const enum ErrorMessageType {
+﻿export const enum ErrorMessageType {
     Win32,
     HResult,
     NtStatus
 }
 
 /** A single error code, with its identifiers and/or message text. */
-interface ErrorMessage {
+export interface ErrorMessage {
     /** The error code for this message */
     code: number;
 
@@ -20,7 +20,7 @@ interface ErrorMessage {
 }
 
 /** A facility (category) of error messages, mapping a code to a meaning (or more than one meanings). */
-interface Facility {
+export interface Facility {
     /** The numeric value of this facility code */
     value: number;
 
@@ -29,7 +29,7 @@ interface Facility {
 }
 
 /** A name of a facility. For historical reasons, multiple facility names (with different meanings) may actually have the same value. */
-interface FacilityName {
+export interface FacilityName {
     /** The human-readable identifier for this facility name. */
     name: string;
 
@@ -41,7 +41,7 @@ interface FacilityName {
 }
 
 /** A range of defined values with a semantic meaning. This is generally a subset of a facility. Ranges do not overlap and are never empty. */
-interface CodeRange {
+export interface CodeRange {
     /** A short description of this range. */
     description: string;
 
@@ -56,7 +56,7 @@ interface CodeRange {
 }
 
 /** The JSON data contining all known error codes. */
-interface Data {
+export interface Data {
     /** The Win32 error messages. */
     win32: ErrorMessage[];
 
@@ -77,7 +77,7 @@ interface Data {
 }
 
 /** A single error code, with its identifiers and/or message text. */
-interface ErrorMessageDto {
+export interface ErrorMessageDto {
     /** The error code for this message */
     c: number;
 
@@ -89,7 +89,7 @@ interface ErrorMessageDto {
 }
 
 /** A facility (category) of error messages, mapping a code to a meaning. */
-interface FacilityDto {
+export interface FacilityDto {
     /** The numeric value of this facility code */
     v: number;
 
@@ -98,7 +98,7 @@ interface FacilityDto {
 }
 
 /** A name of a facility. For historical reasons, multiple facility names (with different meanings) may actually have the same value. */
-interface FacilityNameDto {
+export interface FacilityNameDto {
     /** The human-readable identifier for this facility name. */
     n: string;
 
@@ -110,7 +110,7 @@ interface FacilityNameDto {
 }
 
 /** A range of defined values with a semantic meaning. This is generally a subset of a facility. Ranges do not overlap and are never empty. */
-interface CodeRangeDto {
+export interface CodeRangeDto {
     /** A short description of this range. */
     d: string;
 
@@ -125,7 +125,7 @@ interface CodeRangeDto {
 }
 
 /** The JSON data contining all known error codes. */
-interface DataDto {
+export interface DataDto {
     /** The Win32 error messages. */
     w: ErrorMessageDto[];
 
@@ -143,4 +143,48 @@ interface DataDto {
 
     /** The HRESULT facilities. */
     hf: FacilityDto[];
+}
+
+function transformErrorMessage(errorMessage: ErrorMessageDto, type: ErrorMessageType): ErrorMessage {
+    return {
+        code: errorMessage.c,
+        identifiers: errorMessage.i,
+        text: errorMessage.t,
+        type
+    };
+}
+
+function transformFacilityName(facilityName: FacilityNameDto): FacilityName {
+    return {
+        name: facilityName.n,
+        range: transformRange(facilityName.r),
+        notes: facilityName.o
+    }
+}
+
+function transformFacility(facility: FacilityDto): Facility {
+    return {
+        value: facility.v,
+        names: facility.n.map(transformFacilityName)
+    };
+}
+
+function transformRange(range: CodeRangeDto): CodeRange {
+    return {
+        description: range.d,
+        lowerBound: range.l,
+        upperBound: range.u,
+        childRanges: range.c.map(transformRange)
+    };
+}
+
+export function transformData(data: DataDto): Data {
+    return {
+        win32: data.w.map(x => transformErrorMessage(x, ErrorMessageType.Win32)),
+        win32Range: transformRange(data.wr),
+        ntStatus: data.n.map(x => transformErrorMessage(x, ErrorMessageType.NtStatus)),
+        hresult: data.h.map(x => transformErrorMessage(x, ErrorMessageType.HResult)),
+        ntStatusFacilities: data.nf.map(transformFacility),
+        hresultFacilities: data.hf.map(transformFacility)
+    };
 }

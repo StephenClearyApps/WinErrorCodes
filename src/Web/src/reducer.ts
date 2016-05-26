@@ -1,5 +1,6 @@
 ﻿import { handleActions } from 'redux-actions';
 import { spread } from './helpers';
+import { Data } from './typings/data';
 import { ActionTypes, DataLoadDoneAction, DataLoadErrorAction } from './action-types';
 import { Location } from '~react-router~history/history';
 

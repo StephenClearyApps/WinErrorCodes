@@ -2,7 +2,7 @@
 import { fetchJson } from './helpers';
 import { ActionTypes, dataLoadDone, dataLoadError } from './action-types';
 import { store } from './store';
-import { transformData } from './transform';
+import { transformData, DataDto } from './typings/data';
 
 const actionCreators = {
     loadData: (url: string) => (dispatch: IDispatch) => {

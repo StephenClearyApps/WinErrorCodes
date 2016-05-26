@@ -1,4 +1,6 @@
-﻿export const ActionTypes = {
+﻿import { Data } from './typings/data';
+
+export const ActionTypes = {
     DATA_LOAD_DONE: 'DATA_LOAD_DONE',
     DATA_LOAD_ERROR: 'DATA_LOAD_ERROR'
 };

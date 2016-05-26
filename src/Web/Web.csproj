@@ -30,8 +30,11 @@
     <Content Include="package.json" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\analyze-hresult.tsx" />
+    <TypeScriptCompile Include="src\code.tsx" />
+    <TypeScriptCompile Include="src\exact-matches.tsx" />
+    <TypeScriptCompile Include="src\exact-match.tsx" />
     <TypeScriptCompile Include="src\analyze.tsx" />
-    <TypeScriptCompile Include="src\transform.ts" />
     <TypeScriptCompile Include="src\actions.ts" />
     <TypeScriptCompile Include="src\action-types.ts" />
     <TypeScriptCompile Include="src\helpers.ts" />
@@ -42,7 +45,7 @@
     <TypeScriptCompile Include="src\store.ts" />
     <TypeScriptCompile Include="typings\browser.d.ts" />
     <TypeScriptCompile Include="typings\manual\actions.d.ts" />
-    <TypeScriptCompile Include="typings\manual\data.d.ts" />
+    <TypeScriptCompile Include="src\typings\data.ts" />
     <TypeScriptCompile Include="typings\manual\globals.d.ts" />
     <TypeScriptCompile Include="typings\manual\vendor\redux-actions.d.ts" />
     <TypeScriptCompile Include="typings\manual\vendor\redux-thunk.d.ts" />
