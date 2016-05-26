@@ -50,7 +50,7 @@ export function toInt16(x: number): number {
 const hexChars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
 
 export function hex4(x: number): string {
-    return '0x' +
+    return '' +
         hexChars[(x >> 12) & 0xF] +
         hexChars[(x >> 8) & 0xF] +
         hexChars[(x >> 4) & 0xF] +
@@ -58,7 +58,7 @@ export function hex4(x: number): string {
 }
 
 export function hex8(x: number): string {
-    return '0x' +
+    return '' +
         hexChars[(x >> 28) & 0xF] +
         hexChars[(x >> 24) & 0xF] +
         hexChars[(x >> 20) & 0xF] +

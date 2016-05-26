@@ -33,9 +33,9 @@ function AnalyzeHResult({ data, code }: { data: Data, code: number }) {
     return (
         <div>
             { prefix }
-            <div>Facility: { hex4(facilityCode) }</div>
+            <div>Facility: 0x{ hex4(facilityCode) }</div>
             <div>{ facility ? facility.names.map(x => <div key={x.name}>{x.name}</div>) : null }</div>
-            <div>Code: { hex4(errorCode) }</div>
+            <div>Code: 0x{ hex4(errorCode) }</div>
         </div>
     );
 }

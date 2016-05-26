@@ -30,6 +30,7 @@
     <Content Include="package.json" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\helmet-disqus.tsx" />
     <TypeScriptCompile Include="src\analyze-hresult.tsx" />
     <TypeScriptCompile Include="src\code.tsx" />
     <TypeScriptCompile Include="src\exact-matches.tsx" />

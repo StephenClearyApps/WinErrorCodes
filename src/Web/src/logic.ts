@@ -1,6 +1,6 @@
 ﻿import * as _ from 'lodash';
 import { Data, ErrorMessage } from './typings/data';
-import { toUInt32 } from './helpers';
+import { toUInt32, hex4, hex8 } from './helpers';
 
 export type QueryType = 'win32' | 'hresult' | 'ntstatus';
 
@@ -41,6 +41,9 @@ export function appendNtStatusCodes(result: ErrorMessage[], data: Data, code: nu
     }
 }
 
+/**
+ * Attempts to unwrap the HRESULT code into a Win32 code. Returns NaN if the HRESULT code is not a wrapper around a Win32 code.
+ */
 export function hresultUnwrapWin32(code: number): number {
     if (toUInt32(code & 0xFFFF0000) === 0x80070000) {
         return toUInt32(code & 0xFFFF);
@@ -48,6 +51,9 @@ export function hresultUnwrapWin32(code: number): number {
     return NaN;
 }
 
+/**
+ * Attempts to unwrap the HRESULT code into an NTSTATUS code. Returns NaN if the HRESULT code is not a wrapper around an NTSTATUS code.
+ */
 export function hresultUnwrapNtStatus(code: number): number {
     if (toUInt32(code & 0x10000000) === 0x10000000) {
         return toUInt32(code & 0xEFFFFFFF);
@@ -55,6 +61,9 @@ export function hresultUnwrapNtStatus(code: number): number {
     return NaN;
 }
 
+/**
+ * Attempts to unwrap the HRESULT code into a filter manager NTSTATUS code. Returns NaN if the HRESULT code is not a wrapper around a filter manager NTSTATUS code.
+ */
 export function hresultUnwrapFilterManagerNtStatus(code: number): number {
     if (toUInt32(code & 0x1FFF0000) === 0x001F000) {
         return toUInt32(toUInt32(code & 0x8000FFFF) | 0x401C0000);
@@ -102,6 +111,36 @@ export function findCodes(data: Data, type: QueryType, code: number): ErrorMessa
         appendHresultCodes(result, data, code);
     }
     return result;
+}
+
+/**
+ * Returns a unique identifier for a code. This method does all unwrapping necessary.
+ */
+export function uniqueIdentifier(type: QueryType, code: number): string {
+    if (type === 'win32') {
+        return 'w' + hex4(code);
+    } else if (type === 'hresult') {
+        const win32 = hresultUnwrapWin32(code);
+        if (!isNaN(win32)) {
+            return uniqueIdentifier('win32', win32);
+        }
+        const ntstatus = hresultUnwrapNtStatus(code);
+        if (!isNaN(ntstatus)) {
+            return uniqueIdentifier('ntstatus', ntstatus);
+        }
+        const filterManagerNtStatus = hresultUnwrapFilterManagerNtStatus(code);
+        if (!isNaN(filterManagerNtStatus)) {
+            return uniqueIdentifier('ntstatus', filterManagerNtStatus);
+        }
+        return 'h' + hex8(code);
+    } else if (type === 'ntstatus') {
+        const win32 = ntStatusUnwrapWin32(code);
+        if (!isNaN(win32)) {
+            return uniqueIdentifier('win32', win32);
+        }
+        return 'n' + hex8(code);
+    }
+    return hex8(code);
 }
 
 /**
