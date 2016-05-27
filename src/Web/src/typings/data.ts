@@ -188,3 +188,8 @@ export function transformData(data: DataDto): Data {
         hresultFacilities: data.hf.map(transformFacility)
     };
 }
+
+const errorMessageTypeHumanReadableStrings = [ 'Win32', 'HRESULT', 'NTSTATUS' ];
+export function errorMessageTypeHumanReadableString(type: ErrorMessageType): string {
+    return errorMessageTypeHumanReadableStrings[type];
+}

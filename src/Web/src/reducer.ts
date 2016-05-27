@@ -1,4 +1,5 @@
-﻿import { handleActions } from 'redux-actions';
+﻿import { IDispatch } from 'redux';
+import { handleActions } from 'redux-actions';
 import { spread } from './helpers';
 import { Data } from './typings/data';
 import { ActionTypes, DataLoadDoneAction, DataLoadErrorAction } from './action-types';
@@ -11,6 +12,7 @@ export interface State {
 
 export interface RoutedState extends State {
     location: Location;
+    dispatch: IDispatch;
 }
 
 const defaultState: State = {

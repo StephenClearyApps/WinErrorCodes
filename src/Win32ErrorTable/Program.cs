@@ -25,9 +25,7 @@ namespace Win32ErrorTable
                 results.MergeWith(Win32());
                 results.MergeWith(NtStatus());
 
-                // https://github.com/torvalds/linux/blob/6658be6ad728c347df33b8593b75aafa3c52eeba/drivers/staging/hv/include/HvStatus.h
                 // TODO: other Win32/HRESULT values.
-                // TODO: https://msdn.microsoft.com/en-us/library/cc231214.aspx#Appendix_A_2
                 // TODO: MSI.
                 // TODO: AdsErr.h, asferr.h, BitsMsg.h, CDOSysErr.h, CiError.h, dlnaerror.h, ehstormsg.h, Filterr.h, fltWinError.h, fsrmerr.h,
                 //   functiondiscoveryerror.h, imapi2error.h, imapi2fserror.h, IntShCut.h, iscsierr.h, IssPer16.h, Mdmsg.h, Mferror.h, Mq.h, ndattrib.h,
@@ -82,10 +80,6 @@ namespace Win32ErrorTable
         https://msdn.microsoft.com/en-us/library/windows/desktop/ff485842(v=vs.85).aspx
         https://msdn.microsoft.com/en-us/library/cc231198.aspx
         https://msdn.microsoft.com/en-us/library/cc231214.aspx#Appendix_A_5
-
-        Do we want to handle mappings? https://support.microsoft.com/en-us/kb/113996
-        
-        Disqus: set page.identifier: https://help.disqus.com/customer/portal/articles/472098-javascript-configuration-variables
 
 NTSTATUS: messages in ntdll.dll / ntstatus.h
  0x80000000, 0x40000000 - Severity

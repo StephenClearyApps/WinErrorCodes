@@ -1,5 +1,5 @@
 ﻿import * as _ from 'lodash';
-import { Data, ErrorMessage } from './typings/data';
+import { Data, ErrorMessage, ErrorMessageType, errorMessageTypeHumanReadableString } from './typings/data';
 import { toUInt32, hex4, hex8 } from './helpers';
 
 export type QueryType = 'win32' | 'hresult' | 'ntstatus';
@@ -150,6 +150,7 @@ export function uniqueIdentifier(type: QueryType, code: number): string {
  * @param data The database of known error messages.
  */
 export function search(query: string, type: QueryType | void, data: Data): ErrorMessage[] {
+    query = query ? query : '';
     const result: ErrorMessage[] = [];
 
     const mayBeWin32 = type === 'win32' || !type;
@@ -189,8 +190,18 @@ export function search(query: string, type: QueryType | void, data: Data): Error
         }
     }
 
-    // Perform a case-insensitive substring match on the symbolic id(s) and error text, in that order.
+    if (result.length) {
+        return result;
+    }
+
     const regex = new RegExp(_.escapeRegExp(query), 'i');
+
+    // If the query is not long enough or if it matches too-common strings, then return no matches.
+    if (query.length < 3 || regex.test('Error')) {
+        return [];
+    }
+
+    // Perform a case-insensitive substring match on the symbolic id(s) and error text, in that order.
     const errors = type === 'win32' ? data.win32 :
         type === 'hresult' ? data.hresult :
             type === 'ntstatus' ? data.ntStatus :
@@ -216,4 +227,8 @@ export function search(query: string, type: QueryType | void, data: Data): Error
     }
 
     return result;
+}
+
+export function errorMessageUrl(errorMessage: ErrorMessage): string {
+    return '/?type=' + encodeURIComponent(errorMessageTypeHumanReadableString(errorMessage.type).toLowerCase()) + '&code=' + encodeURIComponent(hex8(errorMessage.code));
 }

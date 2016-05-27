@@ -39,7 +39,7 @@
   "dependencies": {
     "babel-polyfill": "^6.9.0",
     "bluebird": "^3.4.0",
-    "history": "^2.1.1",
+    "history": "^2.1.2",
     "lodash": "^4.13.1",
     "react": "^15.1.0",
     "react-disqus-thread": "^0.3.1",
