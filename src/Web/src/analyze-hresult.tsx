@@ -1,41 +1,63 @@
 ﻿import * as React from 'react';
-import { Data } from './typings/data';
-import { toUInt32, toInt32, toInt16, valueAsInt32IsNegative, valueAsInt16IsNegative, hex4, hex8 } from './helpers';
+import { Data, Facility } from './typings/data';
+import { hresultUnwrapNtStatus, hresultUnwrapFilterManagerNtStatus } from './logic';
+import { toUInt32 } from './helpers';
+import AnalyzeNtStatus from './analyze-ntstatus';
+import Simple16BitCode from './simple-16bit-code';
+
+class HResultCode {
+    severity: number;
+    reserved: number;
+    customer: number;
+    ntstatus: number;
+    xreserved: number;
+    facilityCode: number;
+    errorCode: number;
+
+    facility: Facility;
+    ntstatusCode: number;
+    get facilityCodeValid(): boolean {
+        return !this.customer && !this.ntstatus;
+    }
+    get errorCodeValid(): boolean {
+        return !this.customer && !this.ntstatus;
+    }
+
+    constructor(data: Data, code: number) {
+        this.severity = toUInt32(code & 0x80000000);
+        this.reserved = toUInt32(code & 0x40000000);
+        this.customer = toUInt32(code & 0x20000000);
+        this.ntstatus = toUInt32(code & 0x10000000);
+        this.xreserved = toUInt32(code & 0x08000000);
+        this.facilityCode = toUInt32(code & 0x07FF0000) >>> 16;
+        this.errorCode = toUInt32(code & 0x0000FFFF);
+        const ntstatusCode = hresultUnwrapNtStatus(code);
+        this.ntstatusCode = isNaN(ntstatusCode) ? hresultUnwrapFilterManagerNtStatus(code) : ntstatusCode;
+        if (this.facilityCodeValid) {
+            this.facility = data.hresultFacilities.find(x => x.value === this.facilityCode);
+        }
+    }
+}
 
 function AnalyzeHResult({ data, code }: { data: Data, code: number }) {
-    const severity = toUInt32(code & 0x80000000);
-    const reserved = toUInt32(code & 0x40000000);
-    const customer = toUInt32(code & 0x20000000);
-    const ntstatus = toUInt32(code & 0x10000000);
-    const xreserved = toUInt32(code & 0x08000000);
-    const facilityCode = toUInt32(code & 0x07FF0000) >>> 16;
-    const errorCode = toUInt32(code & 0x0000FFFF);
-
-    if (ntstatus) {
-        return <div>TODO: analyze NTSTATUS</div>;
-    }
-
-    const prefix = (
-        <div>
-            <div>{ severity ? 'Error Code' : 'Success Code' }</div>
-            { reserved ? <div>The reserved bit R is set.</div> : null }
-            { xreserved ? <div>The reserved bit X is set.</div> : null }
-            { customer ? <div>This is a third-party error code, not a Microsoft error code.</div> : null }
-        </div>
-    );
-
-    if (customer) {
-        return prefix;
-    }
-
-    const facility = data.hresultFacilities.find(x => x.value === facilityCode);
+    const hresultCode = new HResultCode(data, code);
 
     return (
         <div>
-            { prefix }
-            <div>Facility: 0x{ hex4(facilityCode) }</div>
-            <div>{ facility ? facility.names.map(x => <div key={x.name}>{x.name}</div>) : null }</div>
-            <div>Code: 0x{ hex4(errorCode) }</div>
+            <div>{ hresultCode.severity ? 'Error' : 'Success' } Code</div>
+            { hresultCode.reserved ? <div>The reserved bit R is set.</div> : null }
+            { hresultCode.xreserved ? <div>The reserved bit X is set.</div> : null }
+            { hresultCode.customer ? <div>This is a third-party error code, not a Microsoft error code.</div> : null }
+            { hresultCode.facilityCodeValid ? <div>Facility: <Simple16BitCode code={hresultCode.facilityCode} /></div> : null }
+            { hresultCode.facility ? <div>{hresultCode.facility.names.map(x => <div key={x.name}>{x.name}</div>) }</div> : null }
+            { hresultCode.errorCodeValid ? <div>Code: <Simple16BitCode code={hresultCode.errorCode} /></div> : null }
+            {
+                isNaN(hresultCode.ntstatusCode) ? null :
+                    <div>
+                        <div>This HRESULT code is a wrapper around an NTSTATUS code.</div>
+                        <AnalyzeNtStatus data={data} code={hresultCode.ntstatusCode} />
+                    </div>
+            }
         </div>
     );
 }

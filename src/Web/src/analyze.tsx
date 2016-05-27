@@ -6,6 +6,7 @@ import { hex8 } from './helpers';
 import ExactMatches from './exact-matches';
 import Code from './code';
 import AnalyzeHResult from './analyze-hresult';
+import AnylyzeNtStatus from './analyze-ntstatus';
 import HelmetDisqus from './helmet-disqus';
 
 function Analyze({ data, type, code }: { data: Data, type: QueryType, code: number }) {
@@ -16,12 +17,10 @@ function Analyze({ data, type, code }: { data: Data, type: QueryType, code: numb
             <Code code={code} />
             <ExactMatches errorMessages={errorMessages} />
             { type === 'hresult' ? <AnalyzeHResult data={data} code={code}/> : null }
+            { type === 'ntstatus' ? <AnylyzeNtStatus data={data} code={code}/> : null }
             <HelmetDisqus type={type} code={code} errorMessages={errorMessages} />
         </div>
     );
-
-    //{ type === 'hresult' ? <AnalyzeHResult/> : null }
-    //{ type === 'ntstatus' ? <AnalyzeNTStatus/> : null }
 }
 
 export default Analyze;
