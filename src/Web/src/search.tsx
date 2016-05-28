@@ -6,7 +6,7 @@ import { ErrorMessage } from './typings/data';
 import { search } from './logic';
 import SearchResult from './search-result';
 
-function Search({ data, location, dispatch }: RoutedState) {
+function Search({ data, location }: RoutedState) {
     const { query }: any = location;
     const results = search(query.q, null, data);
     return (
@@ -15,9 +15,14 @@ function Search({ data, location, dispatch }: RoutedState) {
             <div>
                 <input type='text' value={query.q} onChange={e => browserHistory.replace('/?q=' + encodeURIComponent((e.target as HTMLInputElement).value))} />
             </div>
-            <ul>
-                {results.map(x => <SearchResult errorMessage={x} key={x.type + ':' + x.code} />)}
-            </ul>
+            {
+                results.length ? (
+                    <div className='list-group'>
+                        {results.map(x => <SearchResult errorMessage={x} key={x.type + ':' + x.code} />)}
+                    </div>
+                ) :
+                    <div>No matches found.</div>
+            }
         </div>
     );
 }

@@ -49,7 +49,7 @@ function AnalyzeHResult({ data, code }: { data: Data, code: number }) {
             { hresultCode.xreserved ? <div>The reserved bit X is set.</div> : null }
             { hresultCode.customer ? <div>This is a third-party error code, not a Microsoft error code.</div> : null }
             { hresultCode.facilityCodeValid ? <div>Facility: <Simple16BitCode code={hresultCode.facilityCode} /></div> : null }
-            { hresultCode.facility ? <div>{hresultCode.facility.names.map(x => <div key={x.name}>{x.name}</div>) }</div> : null }
+            { hresultCode.facility ? <div>{hresultCode.facility.names.map(x => <div key={x.name}><code>{x.name}</code></div>) }</div> : null }
             { hresultCode.errorCodeValid ? <div>Code: <Simple16BitCode code={hresultCode.errorCode} /></div> : null }
             {
                 isNaN(hresultCode.ntstatusCode) ? null :

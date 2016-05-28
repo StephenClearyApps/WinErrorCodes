@@ -13,11 +13,11 @@ function humanReadableCode(errorMessage: ErrorMessage): string {
 
 function SearchResult({ errorMessage }: { errorMessage: ErrorMessage }) {
     return (
-        <li>
-            <Link to={errorMessageUrl(errorMessage)}>
-                {errorMessageTypeHumanReadableString(errorMessage.type)}: {humanReadableCode(errorMessage)}: {errorMessage.identifiers.length ? errorMessage.identifiers[0] : null}: {errorMessage.text}
-            </Link>
-        </li>
+        <Link to={errorMessageUrl(errorMessage)} className='list-group-item'>
+            {errorMessage.identifiers.length ? <h4><code>{errorMessage.identifiers[0]}</code></h4> : null}
+            <h4><code>{humanReadableCode(errorMessage)}</code> ({errorMessageTypeHumanReadableString(errorMessage.type)})</h4>
+            <p className='truncated'>{errorMessage.text}</p>
+        </Link>
     );
 }
 

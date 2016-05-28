@@ -5,12 +5,12 @@ function Code({ code }: { code: number }) {
     const errorCode = ((code & 0xFFFF0000) != 0) ? (code & 0xFFFF) : null;
     return (
         <div>
-            <div>0x{ hex8(code) }</div>
-            <div>{ code.toString(10) }</div>
-            { valueAsInt32IsNegative(code) ? <div>{ toInt32(code).toString(10) }</div> : null }
-            { errorCode === null ? null : <div>0x{ hex4(errorCode) }</div> }
-            { errorCode === null ? null : <div>{ errorCode.toString(10) }</div> }
-            { errorCode === null || !valueAsInt16IsNegative(errorCode) ? null : <div>{ toInt16(errorCode).toString(10) }</div> }
+            <div><code>0x{ hex8(code) }</code></div>
+            <div><code>{ code.toString(10) }</code></div>
+            { valueAsInt32IsNegative(code) ? <div><code>{ toInt32(code).toString(10) }</code></div> : null }
+            { errorCode === null ? null : <div><code>0x{ hex4(errorCode) }</code></div> }
+            { errorCode === null ? null : <div><code>{ errorCode.toString(10) }</code></div> }
+            { errorCode === null || !valueAsInt16IsNegative(errorCode) ? null : <div><code>{ toInt16(errorCode).toString(10) }</code></div> }
         </div>
     );
 }

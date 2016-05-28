@@ -197,7 +197,7 @@ export function search(query: string, type: QueryType | void, data: Data): Error
     const regex = new RegExp(_.escapeRegExp(query), 'i');
 
     // If the query is not long enough or if it matches too-common strings, then return no matches.
-    if (query.length < 3 || regex.test('Error')) {
+    if (query.length < 3 || regex.test('ERROR_')) {
         return [];
     }
 

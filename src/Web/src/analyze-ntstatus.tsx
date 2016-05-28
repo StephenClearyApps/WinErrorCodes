@@ -43,7 +43,7 @@ function AnalyzeNtStatus({ data, code }: { data: Data, code: number }) {
             { ntstatusCode.ntstatus ? <div>The reserved bit N is set.</div> : null }
             { ntstatusCode.customer ? <div>This is a third-party error code, not a Microsoft error code.</div> : null }
             { ntstatusCode.facilityCodeValid ? <div>Facility: <Simple16BitCode code={ntstatusCode.facilityCode} /></div> : null }
-            { ntstatusCode.facility ? <div>{ntstatusCode.facility.names.map(x => <div key={x.name}>{x.name}</div>) }</div> : null }
+            { ntstatusCode.facility ? <div>{ntstatusCode.facility.names.map(x => <div key={x.name}><code>{x.name}</code></div>) }</div> : null }
             { ntstatusCode.errorCodeValid ? <div>Code: <Simple16BitCode code={ntstatusCode.errorCode} /></div> : null }
         </div>
     );

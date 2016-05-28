@@ -8,7 +8,7 @@ function ExactMatch({ errorMessage }: { errorMessage: ErrorMessage }) {
     return (
         <div>
             <div>Type: {(dataTypings as any).ErrorMessageType[errorMessage.type]}</div>
-            <div>{errorMessage.identifiers.map(x => <div key={x}>{x}</div>) }</div>
+            <div>{errorMessage.identifiers.map(x => <div key={x}><code>{x}</code></div>) }</div>
             <div>{errorMessage.text}</div>
         </div>
     );
