@@ -30,6 +30,8 @@
     <Content Include="package.json" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\ad.tsx" />
+    <TypeScriptCompile Include="src\layout.tsx" />
     <TypeScriptCompile Include="src\search-result.tsx" />
     <TypeScriptCompile Include="src\search.tsx" />
     <TypeScriptCompile Include="src\simple-16bit-code.tsx" />

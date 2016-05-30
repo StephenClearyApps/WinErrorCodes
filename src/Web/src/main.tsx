@@ -5,7 +5,7 @@ import * as React from 'react';
 import { render } from 'react-dom';
 import { Provider } from 'react-redux';
 import { Router, IndexRoute, Route, browserHistory } from 'react-router';
-import Home from './home';
+import Layout from './layout';
 import { store } from './store';
 import { Actions } from './actions';
 
@@ -15,7 +15,7 @@ window.onload = () => {
         <Provider store={store}>
             <Router history={browserHistory}>
                 <Route path='/'>
-                    <IndexRoute component={Home}/>
+                    <IndexRoute component={Layout}/>
                 </Route>
             </Router>
         </Provider>

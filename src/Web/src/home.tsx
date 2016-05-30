@@ -1,5 +1,4 @@
 ﻿import * as React from 'react';
-import { connect } from 'react-redux';
 import { RoutedState } from './reducer';
 import { search, QueryType } from './logic';
 import Analyze from './analyze';
@@ -25,4 +24,4 @@ function Home(state: RoutedState) {
     return <Search {...state} />;
 }
 
-export default connect(x => x)(Home);
+export default Home;

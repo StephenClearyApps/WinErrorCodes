@@ -13,7 +13,7 @@ function Search({ data, location }: RoutedState) {
         <div>
             <Helmet title='HRESULT, Win32, and NTSTATUS Error Codes'/>
             <div>
-                <input type='text' value={query.q} onChange={e => browserHistory.replace('/?q=' + encodeURIComponent((e.target as HTMLInputElement).value))} />
+                <input type='text' value={query.q || ''} onChange={e => browserHistory.replace('/?q=' + encodeURIComponent((e.target as HTMLInputElement).value))} />
             </div>
             {
                 results.length ? (
