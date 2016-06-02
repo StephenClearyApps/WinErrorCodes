@@ -1,4 +1,4 @@
-﻿import * as React from 'react';
+﻿import React from 'react';
 import * as dataTypings from './typings/data';
 import { ErrorMessage } from './typings/data';
 

@@ -1,4 +1,4 @@
-﻿import * as React from 'react';
+﻿import React from 'react';
 import { Link } from 'react-router';
 import { ErrorMessage, ErrorMessageType, errorMessageTypeHumanReadableString } from './typings/data';
 import { hex8 } from './helpers';

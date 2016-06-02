@@ -1,4 +1,4 @@
-﻿import * as _ from 'lodash';
+﻿import _ from 'lodash';
 import { Data, ErrorMessage, ErrorMessageType, errorMessageTypeHumanReadableString } from './typings/data';
 import { toUInt32, hex4, hex8 } from './helpers';
 

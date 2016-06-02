@@ -1,5 +1,5 @@
 ﻿declare module 'react-disqus-thread' {
-    import * as React from 'react';
+    import React from 'react';
 
     export interface ReactDisqusThreadProps {
         shortname: string;

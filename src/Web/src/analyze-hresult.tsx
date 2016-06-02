@@ -1,4 +1,4 @@
-﻿import * as React from 'react';
+﻿import React from 'react';
 import { Data, Facility } from './typings/data';
 import { hresultUnwrapNtStatus, hresultUnwrapFilterManagerNtStatus } from './logic';
 import { toUInt32 } from './helpers';

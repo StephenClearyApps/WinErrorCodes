@@ -1,4 +1,4 @@
-﻿import * as React from 'react';
+﻿import React from 'react';
 import { toInt16, valueAsInt16IsNegative, hex4 } from './helpers';
 
 function Simple16BitCode({ code }: { code: number }) {

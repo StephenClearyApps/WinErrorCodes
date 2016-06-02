@@ -1,4 +1,4 @@
-﻿import * as React from 'react';
+﻿import React from 'react';
 import { RoutedState } from './reducer';
 import { search, QueryType } from './logic';
 import Analyze from './analyze';

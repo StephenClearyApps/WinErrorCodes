@@ -1,5 +1,5 @@
-﻿import * as _ from 'lodash';
-import * as React from 'react';
+﻿import _ from 'lodash';
+import React from 'react';
 import { Data } from './typings/data';
 import { QueryType, findCodes, hresultUnwrapWin32 } from './logic';
 import { hex8 } from './helpers';

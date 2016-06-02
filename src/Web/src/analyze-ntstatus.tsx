@@ -1,4 +1,4 @@
-﻿import * as React from 'react';
+﻿import React from 'react';
 import { Data , Facility} from './typings/data';
 import { toUInt32, toInt32, toInt16, valueAsInt32IsNegative, valueAsInt16IsNegative, hex4, hex8 } from './helpers';
 import Simple16BitCode from './simple-16bit-code';

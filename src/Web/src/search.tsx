@@ -1,4 +1,4 @@
-﻿import * as React from 'react';
+﻿import React from 'react';
 import { browserHistory } from 'react-router';
 import Helmet from 'react-helmet';
 import { RoutedState } from './reducer';
