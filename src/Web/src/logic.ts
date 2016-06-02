@@ -143,6 +143,96 @@ export function uniqueIdentifier(type: QueryType, code: number): string {
     return hex8(code);
 }
 
+function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtStatus: boolean, mayBeHresult: boolean, isValidHexNumber: boolean, isValidDecNumber: boolean): ErrorMessage[] {
+    const result: ErrorMessage[] = [];
+    let hexCode: number;
+    let decCode: number;
+
+    // Attempt to match as a dec number first.
+    if (isValidDecNumber) {
+        decCode = parseInt(query, 10);
+        if (mayBeWin32) {
+            appendWin32Codes(result, data, decCode);
+        }
+        if (mayBeHresult) {
+            appendHresultCodes(result, data, decCode);
+        }
+        if (mayBeNtStatus) {
+            appendNtStatusCodes(result, data, decCode);
+        }
+    }
+
+    // Next, attempt to match as a hex number.
+    if (isValidHexNumber) {
+        hexCode = parseInt(query, 16);
+        if (mayBeWin32) {
+            appendWin32Codes(result, data, hexCode);
+        }
+        if (mayBeHresult) {
+            appendHresultCodes(result, data, hexCode);
+        }
+        if (mayBeNtStatus) {
+            appendNtStatusCodes(result, data, hexCode);
+        }
+    }
+
+    // Finally, offer to analyze it.
+    if (isValidDecNumber) {
+        if (mayBeWin32 && toUInt32(decCode & 0xFFFF0000) === 0) {
+            result.push({
+                code: decCode,
+                identifiers: [],
+                text: `Analyze ${decCode} as a Win32 error code`,
+                type: ErrorMessageType.Win32
+            });
+        }
+        if (mayBeHresult) {
+            result.push({
+                code: decCode,
+                identifiers: [],
+                text: `Analyze ${decCode} as an HRESULT error code`,
+                type: ErrorMessageType.HResult
+            });
+        }
+        if (mayBeNtStatus) {
+            result.push({
+                code: decCode,
+                identifiers: [],
+                text: `Analyze ${decCode} as an NTSTATUS error code`,
+                type: ErrorMessageType.NtStatus
+            });
+        }
+    }
+    if (isValidHexNumber) {
+        if (mayBeWin32 && toUInt32(hexCode & 0xFFFF0000) === 0) {
+            result.push({
+                code: hexCode,
+                identifiers: [],
+                text: `Analyze 0x${hex4(hexCode)} as a Win32 error code`,
+                type: ErrorMessageType.Win32
+            });
+        }
+        if (mayBeHresult) {
+            result.push({
+                code: hexCode,
+                identifiers: [],
+                text: `Analyze 0x${hex8(hexCode)} as an HRESULT error code`,
+                type: ErrorMessageType.HResult
+            });
+        }
+        if (mayBeNtStatus) {
+            result.push({
+                code: hexCode,
+                identifiers: [],
+                text: `Analyze 0x${hex8(hexCode)} as an NTSTATUS error code`,
+                type: ErrorMessageType.NtStatus
+            });
+        }
+    }
+
+    return result;
+}
+
 /**
  * Attempts to match the user query to one or more error messages. Returns an array of possible matches, which may be empty.
  * @param query The user query.
@@ -161,37 +251,7 @@ export function search(query: string, type: QueryType | void, data: Data): Error
     const isValidHexNumber = validHexNumber.test(query);
     const isValidDecNumber = validDecNumber.test(query);
     if (isValidHexNumber || isValidDecNumber) {
-        // Attempt to match as a hex number first.
-        if (isValidHexNumber) {
-            const code = parseInt(query, 16);
-            if (mayBeWin32) {
-                appendWin32Codes(result, data, code);
-            }
-            if (mayBeHresult) {
-                appendHresultCodes(result, data, code);
-            }
-            if (mayBeNtStatus) {
-                appendNtStatusCodes(result, data, code);
-            }
-        }
-
-        // Next, attempt to match as a dec number.
-        if (isValidDecNumber) {
-            const code = parseInt(query, 10);
-            if (mayBeWin32) {
-                appendWin32Codes(result, data, code);
-            }
-            if (mayBeHresult) {
-                appendHresultCodes(result, data, code);
-            }
-            if (mayBeNtStatus) {
-                appendNtStatusCodes(result, data, code);
-            }
-        }
-    }
-
-    if (result.length) {
-        return result;
+        return numericSearch(query, data, mayBeWin32, mayBeNtStatus, mayBeHresult, isValidHexNumber, isValidDecNumber);
     }
 
     const regex = new RegExp(_.escapeRegExp(query), 'i');
