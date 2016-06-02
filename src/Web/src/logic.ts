@@ -229,6 +229,15 @@ export function search(query: string, type: QueryType | void, data: Data): Error
     return result;
 }
 
+export function errorMessageTypeToQueryType(type: ErrorMessageType): QueryType {
+    switch (type) {
+        case ErrorMessageType.Win32: return 'win32';
+        case ErrorMessageType.HResult: return 'hresult';
+        case ErrorMessageType.NtStatus: return 'ntstatus';
+        default: return undefined;
+    }
+}
+
 export function errorMessageUrl(errorMessage: ErrorMessage): string {
-    return '/?type=' + encodeURIComponent(errorMessageTypeHumanReadableString(errorMessage.type).toLowerCase()) + '&code=' + encodeURIComponent(hex8(errorMessage.code));
+    return '/?type=' + encodeURIComponent(errorMessageTypeToQueryType(errorMessage.type)) + '&code=' + encodeURIComponent(hex8(errorMessage.code));
 }
