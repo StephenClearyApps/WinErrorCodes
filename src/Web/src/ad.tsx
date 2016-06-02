@@ -1,5 +1,7 @@
 ﻿import React from 'react';
 
+/* eslint-disable react/no-danger */
+
 function showAds() {
     window.setTimeout(() => {
         try {
