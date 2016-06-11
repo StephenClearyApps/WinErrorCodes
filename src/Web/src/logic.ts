@@ -233,6 +233,12 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
     return result;
 }
 
+export function isValidTextQuery(query: string): boolean {
+    // If the query is not long enough or if it matches too-common strings, then it's not considered "valid".
+    const regex = new RegExp(_.escapeRegExp(query), 'i');
+    return !(query.length < 3 || regex.test('ERROR_') || regex.test('STATUS_'));
+}
+
 /**
  * Attempts to match the user query to one or more error messages. Returns an array of possible matches, which may be empty.
  * @param query The user query.
@@ -257,7 +263,7 @@ export function search(query: string, type: QueryType | void, data: Data): Error
     const regex = new RegExp(_.escapeRegExp(query), 'i');
 
     // If the query is not long enough or if it matches too-common strings, then return no matches.
-    if (query.length < 3 || regex.test('ERROR_') || regex.test('STATUS_')) {
+    if (!isValidTextQuery(query)) {
         return [];
     }
 
