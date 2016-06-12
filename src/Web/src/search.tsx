@@ -8,15 +8,16 @@ import SearchResult from './search-result';
 
 function Search({ data, location }: RoutedState) {
     const { query }: any = location;
-    const results = search(query.q, null, data);
-    var resultList = <div>No matches found.</div>;
+    const q = query.q || '';
+    const results = search(q, null, data);
+    let resultList = <div>No matches found.</div>;
     if (results.length) {
         resultList = (
             <div className='list-group'>
                 {results.map(x => <SearchResult errorMessage={x} key={x.type + ':' + x.code} />)}
             </div>
         );
-    } else if (!isValidTextQuery(query.q)) {
+    } else if (!isValidTextQuery(q)) {
         resultList = <div>Type a longer search query to see results.</div>;
     }
     return (
