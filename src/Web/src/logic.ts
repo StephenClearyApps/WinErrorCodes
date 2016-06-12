@@ -178,7 +178,7 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
 
     // Finally, offer to analyze it.
     if (isValidDecNumber) {
-        if (mayBeWin32 && toUInt32(decCode & 0xFFFF0000) === 0) {
+        if (mayBeWin32 && toUInt32(decCode & 0xFFFF0000) === 0 && !_.some(result, x => x.type === ErrorMessageType.Win32 && x.code === decCode)) {
             result.push({
                 code: decCode,
                 identifiers: [],
@@ -186,7 +186,7 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
                 type: ErrorMessageType.Win32
             });
         }
-        if (mayBeHresult) {
+        if (mayBeHresult && !_.some(result, x => x.type === ErrorMessageType.HResult && x.code === decCode)) {
             result.push({
                 code: decCode,
                 identifiers: [],
@@ -194,7 +194,7 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
                 type: ErrorMessageType.HResult
             });
         }
-        if (mayBeNtStatus) {
+        if (mayBeNtStatus && !_.some(result, x => x.type === ErrorMessageType.NtStatus && x.code === decCode)) {
             result.push({
                 code: decCode,
                 identifiers: [],
@@ -204,7 +204,7 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
         }
     }
     if (isValidHexNumber) {
-        if (mayBeWin32 && toUInt32(hexCode & 0xFFFF0000) === 0) {
+        if (mayBeWin32 && toUInt32(hexCode & 0xFFFF0000) === 0 && !_.some(result, x => x.type === ErrorMessageType.Win32 && x.code === hexCode)) {
             result.push({
                 code: hexCode,
                 identifiers: [],
@@ -212,7 +212,7 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
                 type: ErrorMessageType.Win32
             });
         }
-        if (mayBeHresult) {
+        if (mayBeHresult && !_.some(result, x => x.type === ErrorMessageType.HResult && x.code === hexCode)) {
             result.push({
                 code: hexCode,
                 identifiers: [],
@@ -220,7 +220,7 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
                 type: ErrorMessageType.HResult
             });
         }
-        if (mayBeNtStatus) {
+        if (mayBeNtStatus && !_.some(result, x => x.type === ErrorMessageType.NtStatus && x.code === hexCode)) {
             result.push({
                 code: hexCode,
                 identifiers: [],
