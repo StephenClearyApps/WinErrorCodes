@@ -7,23 +7,23 @@ type Range = {
     end: number;
 };
 
-function Spanner({ text, ranges, className }: { text: string, ranges: Range[], className?: string }) {
-    className = className || 'highlight';
+function Spanner({ text, ranges }: { text: string, ranges: Range[] }) {
     const result = [];
     let textIndex = 0;
     let rangeIndex = 0;
     while (textIndex < text.length) {
         if (rangeIndex >= ranges.length) {
-            result.push(text.substring(textIndex));
+            result.push(<span className='highlightable' key={textIndex}>{text.substring(textIndex)}</span>);
             break;
         }
 
         const range = ranges[rangeIndex];
         if (textIndex !== range.begin) {
-            result.push(text.substring(textIndex, range.begin));
+            result.push(<span className='highlightable' key={textIndex}>{text.substring(textIndex, range.begin)}</span>);
+            textIndex = range.begin;
         }
 
-        result.push(<span className={className} key={range.begin}>{text.substring(range.begin, range.end)}</span>);
+        result.push(<span className='highlightable highlight' key={textIndex}>{text.substring(range.begin, range.end)}</span>);
         textIndex = range.end;
         ++rangeIndex;
     }
