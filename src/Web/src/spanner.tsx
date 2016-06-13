@@ -23,7 +23,7 @@ function Spanner({ text, ranges, className }: { text: string, ranges: Range[], c
             result.push(text.substring(textIndex, range.begin));
         }
 
-        result.push(<span className={className}>{text.substring(range.begin, range.end)}</span>);
+        result.push(<span className={className} key={range.begin}>{text.substring(range.begin, range.end)}</span>);
         textIndex = range.end;
         ++rangeIndex;
     }

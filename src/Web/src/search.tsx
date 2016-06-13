@@ -4,28 +4,29 @@ import Helmet from 'react-helmet';
 import { RoutedState } from './reducer';
 import { ErrorMessage } from './typings/data';
 import { search, isValidTextQuery } from './logic';
+import SearchBox from './search-box';
 import SearchResult from './search-result';
 
 function Search({ data, location }: RoutedState) {
-    const { query }: any = location;
-    const q = query.q || '';
-    const results = search(q, null, data);
+    const locationQuery: any = location.query;
+    const query = locationQuery.q || '';
+    const results = search(query, null, data);
     let resultList = <div>No matches found.</div>;
     if (results.length) {
         resultList = (
             <div className='list-group'>
-                {results.map(x => <SearchResult errorMessage={x} key={x.type + ':' + x.code} />)}
+                {results.map(x => <SearchResult errorMessage={x} key={x.type + ':' + x.code} />) }
             </div>
         );
-    } else if (!isValidTextQuery(q)) {
+    } else if (!isValidTextQuery(query)) {
         resultList = <div>Type a longer search query to see results.</div>;
     }
     return (
         <div>
             <Helmet title='HRESULT, Win32, and NTSTATUS Error Codes'/>
-            <div>
-                <input type='text' value={query.q || ''} onChange={e => browserHistory.replace('/?q=' + encodeURIComponent((e.target as HTMLInputElement).value))} />
-            </div>
+            <form role="search">
+                <SearchBox query={query} placeholder='Search error codes and messages' />
+            </form>
             {resultList}
         </div>
     );

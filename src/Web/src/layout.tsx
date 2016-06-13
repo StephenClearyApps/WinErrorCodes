@@ -1,10 +1,15 @@
 ﻿import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router';
+import { RoutedState } from './reducer';
 import Home from './home';
 import Ad from './ad';
+import SearchBox from './search-box';
 
-function Layout(props: any) {
+function Layout(props: RoutedState) {
+    const { location } = props;
+    const locationQuery: any = location.query;
+    const query = locationQuery.q || '';
     return (
         <div>
             <nav className="navbar navbar-default navbar-fixed-top">
@@ -19,8 +24,11 @@ function Layout(props: any) {
                         <Link className="navbar-brand" to="/">ErrorCodeLookup.com</Link>
                     </div>
                     <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                        <form className="navbar-form navbar-left" role="search">
+                            <SearchBox query={query} />
+                        </form>
                         <ul className="nav navbar-nav navbar-right">
-                            <li><a href="http://stephencleary.com/">Author</a></li>
+                            <li><a href="http://stephencleary.com/">by Stephen Cleary</a></li>
                         </ul>
                     </div>
                 </div>

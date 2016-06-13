@@ -32,6 +32,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="src\ad.tsx" />
     <TypeScriptCompile Include="src\layout.tsx" />
+    <TypeScriptCompile Include="src\search-box.tsx" />
     <TypeScriptCompile Include="src\spanner.tsx" />
     <TypeScriptCompile Include="src\search-result.tsx" />
     <TypeScriptCompile Include="src\search.tsx" />

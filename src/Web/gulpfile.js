@@ -7,7 +7,8 @@ var minifyHtml = require('gulp-html-minifier');
 var webpack = require('webpack');
 var webpackStream = require('webpack-stream');
 var cssNano = require('gulp-cssnano');
-var webserver = require('gulp-webserver');
+var connect = require('gulp-connect');
+var open = require('gulp-open');
 var exec = require('child_process').exec;
 var path = require('path');
 
@@ -89,16 +90,24 @@ gulp.task('build-src', ['html', 'css', 'js']);
 
 gulp.task('build', ['build-src', 'generate']);
 
-gulp.task('watch', ['build'], function () {
-    gulp.watch(config.paths.allSrc, ['build-src']);
+gulp.task('refresh', ['build-src'], function () {
+    gulp.src('./*')
+        .pipe(connect.reload());
 });
 
-gulp.task('serve', ['build'], function() {
-    gulp.src('../..')
-        .pipe(webserver({
-            livereload: true,
-            open: true
-        }));
+gulp.task('watch', ['build-src'], function () {
+    gulp.watch(config.paths.allSrc, ['refresh']);
 });
 
-gulp.task('default', debug ? ['watch', 'serve'] : ['build']);
+gulp.task('serve', ['build-src'], function () {
+    connect.server({
+        root: '../..',
+        livereload: true
+    });
+});
+
+gulp.task('open', ['serve'], function () {
+    return gulp.src(__filename).pipe(open({ uri: 'http://localhost:8080/' }));
+});
+
+gulp.task('default', debug ? ['watch', 'open'] : ['build']);
