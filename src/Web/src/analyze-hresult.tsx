@@ -1,9 +1,10 @@
 ﻿import React from 'react';
 import { Data, Facility } from './typings/data';
 import { hresultUnwrapNtStatus, hresultUnwrapFilterManagerNtStatus } from './logic';
-import { toUInt32 } from './helpers';
+import { toUInt32, hex8 } from './helpers';
 import AnalyzeNtStatus from './analyze-ntstatus';
 import Simple16BitCode from './simple-16bit-code';
+import Spanner from './spanner';
 
 class HResultCode {
     severity: number;
@@ -41,10 +42,11 @@ class HResultCode {
 
 function AnalyzeHResult({ data, code }: { data: Data, code: number }) {
     const hresultCode = new HResultCode(data, code);
+    const hex = hex8(code);
 
     return (
         <div>
-            <div>{ hresultCode.severity ? 'Error' : 'Success' } Code</div>
+            <div>0x<Spanner text={hex} ranges={[{begin:0, end:1}]}/> Severity: { hresultCode.severity ? 'Error' : 'Success' }</div>
             { hresultCode.reserved ? <div>The reserved bit R is set.</div> : null }
             { hresultCode.xreserved ? <div>The reserved bit X is set.</div> : null }
             { hresultCode.customer ? <div>This is a third-party error code, not a Microsoft error code.</div> : null }
