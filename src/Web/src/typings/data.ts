@@ -193,3 +193,8 @@ const errorMessageTypeHumanReadableStrings = [ 'Win32', 'HRESULT', 'NTSTATUS' ];
 export function errorMessageTypeHumanReadableString(type: ErrorMessageType): string {
     return errorMessageTypeHumanReadableStrings[type];
 }
+
+const errorMessageTypeHumanReadableShortStrings = [ 'W', 'HR', 'NT' ];
+export function errorMessageTypeHumanReadableShortString(type: ErrorMessageType): string {
+    return errorMessageTypeHumanReadableShortStrings[type];
+}
