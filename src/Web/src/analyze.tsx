@@ -14,8 +14,9 @@ function Analyze({ data, type, code }: { data: Data, type: QueryType, code: numb
     const errorMessages = findCodes(data, type, code);
     return (
         <div>
-            <Code code={code} />
             <ExactMatches errorMessages={errorMessages} />
+            <Code code={code} />
+            { type === 'hresult' || type === 'ntstatus' ? <h3>Analysis</h3> : null }
             { type === 'hresult' ? <AnalyzeHResult data={data} code={code}/> : null }
             { type === 'ntstatus' ? <AnylyzeNtStatus data={data} code={code}/> : null }
             <HelmetDisqus type={type} code={code} errorMessages={errorMessages} />
