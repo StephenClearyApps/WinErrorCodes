@@ -60,13 +60,35 @@ function customerMessage(hresultCode: HResultCode) {
 
 function ntstatusMessage(hresultCode: HResultCode) {
     return hresultCode.ntstatus ?
-        <span>The NTSTATUS bit is set.This HRESULT code is a wrapper around an NTSTATUS code.</span> :
+        <span>The NTSTATUS bit is set.This HRESULT code is a wrapper around the NTSTATUS code <code>0x{hex8(hresultCode.ntstatusCode) }</code>.</span> :
         <span>The NTSTATUS bit is not set.This is a regular HRESULT code.</span>;
 }
 
 function AnalyzeHResult({ data, code }: { data: Data, code: number }) {
     const hresultCode = new HResultCode(data, code);
     const hex = hex8(code);
+
+    const rows = [];
+    if (hresultCode.ntstatus) {
+        rows.push(<tr key={1}><td><code><Spanner text={hex} ranges={[{ begin: 0, end: 1 }]}/></code></td><td>{ntstatusMessage(hresultCode) }</td></tr>);
+    } else {
+        rows.push(<tr key={1}><td><code><Spanner text={hex} ranges={[{ begin: 0, end: 1 }]}/></code></td><td>Severity: { hresultCode.severity ? 'Error' : 'Success' }</td></tr>);
+        rows.push(<tr key={2}><td><code><Spanner text={hex} ranges={[{ begin: 0, end: 1 }]}/></code></td><td>{reservedMessage(hresultCode) }</td></tr>);
+        rows.push(<tr key={3}><td><code><Spanner text={hex} ranges={[{ begin: 0, end: 1 }]}/></code></td><td>{customerMessage(hresultCode) }</td></tr>);
+        rows.push(<tr key={4}><td><code><Spanner text={hex} ranges={[{ begin: 0, end: 1 }]}/></code></td><td>{ntstatusMessage(hresultCode) }</td></tr>);
+        rows.push(<tr key={5}><td><code><Spanner text={hex} ranges={[{ begin: 1, end: 2 }]}/></code></td><td>{xreservedMessage(hresultCode) }</td></tr>);
+        if (hresultCode.facilityCodeValid) {
+            rows.push(
+                <tr key={6}><td><code><Spanner text={hex} ranges={[{ begin: 1, end: 4 }]}/></code></td><td><div>
+                    <div>Facility: <Simple16BitCode code={hresultCode.facilityCode} /></div>
+                    { hresultCode.facility ? <div>{hresultCode.facility.names.map(x => <div key={x.name}><code>{x.name}</code></div>) }</div> : null }
+                </div></td></tr>
+            );
+        }
+        if (hresultCode.errorCodeValid) {
+            rows.push(<tr key={7}><td><code><Spanner text={hex} ranges={[{ begin: 4, end: 8 }]}/></code></td><td>Code: <Simple16BitCode code={hresultCode.errorCode} /></td></tr>);
+        }
+    }
 
     return (
         <div>
@@ -78,34 +100,14 @@ function AnalyzeHResult({ data, code }: { data: Data, code: number }) {
                             <tr><th>Code</th><th>Meaning</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td><code><Spanner text={hex} ranges={[{ begin: 0, end: 1 }]}/></code></td><td>Severity: { hresultCode.severity ? 'Error' : 'Success' }</td></tr>
-                            <tr><td><code><Spanner text={hex} ranges={[{ begin: 0, end: 1 }]}/></code></td><td>{reservedMessage(hresultCode) }</td></tr>
-                            <tr><td><code><Spanner text={hex} ranges={[{ begin: 0, end: 1 }]}/></code></td><td>{customerMessage(hresultCode) }</td></tr>
-                            <tr><td><code><Spanner text={hex} ranges={[{ begin: 0, end: 1 }]}/></code></td><td>{ntstatusMessage(hresultCode) }</td></tr>
-                            <tr><td><code><Spanner text={hex} ranges={[{ begin: 1, end: 2 }]}/></code></td><td>{xreservedMessage(hresultCode) }</td></tr>
-                            {
-                                hresultCode.facilityCodeValid ?
-                                    <tr><td><code><Spanner text={hex} ranges={[{ begin: 1, end: 4 }]}/></code></td><td><div>
-                                        <div>Facility: <Simple16BitCode code={hresultCode.facilityCode} /></div>
-                                        { hresultCode.facility ? <div>{hresultCode.facility.names.map(x => <div key={x.name}><code>{x.name}</code></div>) }</div> : null }
-                                    </div></td></tr> :
-                                    null
-                            }
-                            {
-                                hresultCode.errorCodeValid ?
-                                    <tr><td><code><Spanner text={hex} ranges={[{ begin: 4, end: 8 }]}/></code></td><td>Code: <Simple16BitCode code={hresultCode.errorCode} /></td></tr> :
-                                    null
-                            }
+                            {rows}
                         </tbody>
                     </table>
                 </div>
             </div>
             {
                 isNaN(hresultCode.ntstatusCode) ? null :
-                    <div>
-                        <div>This HRESULT code is a wrapper around an NTSTATUS code.</div>
-                        <AnalyzeNtStatus data={data} code={hresultCode.ntstatusCode} />
-                    </div>
+                    <AnalyzeNtStatus data={data} code={hresultCode.ntstatusCode} />
             }
         </div>
     );
