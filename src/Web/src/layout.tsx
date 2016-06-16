@@ -6,6 +6,10 @@ import Home from './home';
 import Ad from './ad';
 import SearchBox from './search-box';
 
+function adKey() {
+    return window.location.href.replace(/\?q=.*/, '');
+}
+
 function Layout(props: RoutedState) {
     const { location } = props;
     const locationQuery: any = location.query;
@@ -37,13 +41,13 @@ function Layout(props: RoutedState) {
             <div className='container-fluid'>
                 <div className='row'>
                     <div className='col-sm-5 col-md-4'>
-                        <Ad slot='7090994222' width={300} height={600}/>
+                        <Ad key={adKey()} slot='7090994222' width={300} height={600}/>
                     </div>
                     <div className='col-sm-2 col-md-4'>
                         <Home {...props}/>
                     </div>
                     <div className='col-sm-5 col-md-4'>
-                        <Ad slot='1044460625' width={300} height={600}/>
+                        <Ad key={adKey()} slot='1044460625' width={300} height={600}/>
                     </div>
                 </div>
             </div>
