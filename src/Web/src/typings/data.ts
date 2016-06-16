@@ -4,6 +4,13 @@
     NtStatus = 1 << 2
 }
 
+/** Whether this type represents more than one error message type (i.e., it is wrapped). */
+export function errorMessageTypeIsMixed(type: ErrorMessageType): boolean {
+    return type !== ErrorMessageType.Win32 &&
+        type !== ErrorMessageType.HResult &&
+        type !== ErrorMessageType.NtStatus;
+}
+
 /** A single error code, with its identifiers and/or message text. */
 export interface ErrorMessage {
     /** The error code for this message */

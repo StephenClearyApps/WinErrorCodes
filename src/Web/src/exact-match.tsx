@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { ErrorMessage } from './typings/data';
+import { ErrorMessage, errorMessageTypeIsMixed } from './typings/data';
 import { hex8 } from './helpers';
 import Logo from './logo';
 
@@ -10,7 +10,7 @@ function ExactMatch({ errorMessage }: { errorMessage: ErrorMessage }) {
         <div className='panel panel-default'>
             <div className='panel-body'>
                 <Logo full={true} type={errorMessage.type} style={{display:'block'}}/>
-                <h3><code>{title}</code></h3>
+                <h3><code>{title}</code>{ errorMessageTypeIsMixed(errorMessage.type) ? ' (wrapped)' : null }</h3>
                 <div>{errorMessage.text}</div>
                 {
                     errorMessage.identifiers.length > 1 ?

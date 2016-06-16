@@ -3,25 +3,43 @@ import React from 'react';
 import { Link } from 'react-router';
 import { Data , Facility, ErrorMessageType } from './typings/data';
 import { toUInt32, toInt32, toInt16, valueAsInt32IsNegative, valueAsInt16IsNegative, hex4, hex8 } from './helpers';
-import { errorMessageUrl } from './logic';
+import { errorMessageUrl, ntStatusUnwrapWin32 } from './logic';
 import Simple16BitCode from './simple-16bit-code';
 import Spanner from './spanner';
 
 class NtStatusCode {
+    /** The NTSTATUS code */
     fullCode: number;
+
+    /** The severity, in the range [0, 4). */
     severity: number;
+
+    /** Whether the customer bit is set. */
     customer: number;
+
+    /** Whether the NTSTATUS bit is set. */
     ntstatus: number;
+
+    /** The facility code, in the range [0x0000, 0x1000). This value is only valid if `facilityCodeValid`. */
     facilityCode: number;
+
+    /** The error code portion, in the range [0x00000, 0x10000). This value is only valid if `errorCodeValid`. */
     errorCode: number;
 
+    /** The facility; undefined if `!facilityCodeValid` or if `facilityCode` is unknown. */
     facility: Facility;
+
+    /** Whether `facilityCode` is valid. */
     get facilityCodeValid(): boolean {
         return !this.customer;
     }
+
+    /** Whether `errorCode` is valid. */
     get errorCodeValid(): boolean {
         return !this.customer;
     }
+
+    /** Whether `facility` has at least one symbolic identifier. */
     get facilityHasNames(): boolean {
         return this.facility && _.some(this.facility.names, x => x.name);
     }
@@ -58,6 +76,7 @@ function ntstatusMessage(code: NtStatusCode) {
 function AnalyzeNtStatus({ data, code }: { data: Data, code: number }) {
     const ntstatusCode = new NtStatusCode(data, code);
     const hex = hex8(code);
+    const win32Code = ntStatusUnwrapWin32(code);
 
     return (
         <div>
@@ -87,6 +106,11 @@ function AnalyzeNtStatus({ data, code }: { data: Data, code: number }) {
                             }
                         </tbody>
                     </table>
+
+                    {
+                        isNaN(win32Code) ? null :
+                            <p>This NTSTATUS code <code>0x{hex}</code> is a wrapper around <Link to={errorMessageUrl({ type: ErrorMessageType.Win32, code: win32Code})}>the Win32 code <code>{win32Code}</code></Link>.</p>
+                    }
                 </div>
             </div>
         </div>
