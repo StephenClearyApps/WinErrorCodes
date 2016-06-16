@@ -65,6 +65,9 @@
   <ItemGroup>
     <Content Include=".babelrc" />
     <Content Include=".eslintrc" />
+    <Content Include="static\icon-32x32.png" />
+    <Content Include="static\icon-128x128.png" />
+    <Content Include="static\icon.png" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>

@@ -1,19 +1,24 @@
 ﻿import _ from 'lodash';
-import { Data, ErrorMessage, ErrorMessageType, errorMessageTypeHumanReadableString } from './typings/data';
-import { toUInt32, hex4, hex8 } from './helpers';
+import { Data, ErrorMessage, ErrorMessageType } from './typings/data';
+import { toUInt32, hex4, hex8, spread } from './helpers';
 
 export type QueryType = 'win32' | 'hresult' | 'ntstatus';
 
 const validHexNumber = /^(0x)?[0-9A-F]{1,8}$/i;
 const validDecNumber = /^-?[0-9]+$/;
 
+function mergeResults(masterResults: ErrorMessage[], localResults: ErrorMessage[]) {
+    // TODO
+    masterResults.push(...localResults);
+}
+
 /**
  * Matches the code against known Win32 errors, and returns 0-1 matches.
  */
-export function appendWin32Codes(result: ErrorMessage[], data: Data, code: number) {
+export function appendWin32Codes(results: ErrorMessage[], data: Data, code: number) {
     const err = _.find(data.win32, x => x.code === code);
-    if (err && result.indexOf(err) < 0) {
-        result.push(err);
+    if (err) {
+        results.push(err);
     }
 }
 
@@ -27,17 +32,24 @@ export function ntStatusUnwrapWin32(code: number): number {
 /**
  * Matches the code against known NTSTATUS errors, and returns 0-2 matches.
  */
-export function appendNtStatusCodes(result: ErrorMessage[], data: Data, code: number) {
+export function appendNtStatusCodes(results: ErrorMessage[], data: Data, code: number) {
     // Do a direct NTSTATUS lookup first.
     const err = _.find(data.ntStatus, x => x.code === code);
-    if (err && result.indexOf(err) < 0) {
-        result.push(err);
+    if (err) {
+        results.push(err);
     }
 
     // If this is an NTSTATUS wrapper around a Win32 error, include the Win32 error as well.
     const win32Code = ntStatusUnwrapWin32(code);
     if (!isNaN(win32Code)) {
-        appendWin32Codes(result, data, win32Code);
+        const localResults: ErrorMessage[] = [];
+        appendWin32Codes(localResults, data, win32Code);
+        mergeResults(results, localResults.map(x => {
+            const suberr = spread(x);
+            suberr.type |= ErrorMessageType.NtStatus;
+            suberr.code = code;
+            return suberr;
+        }));
     }
 }
 
@@ -74,30 +86,51 @@ export function hresultUnwrapFilterManagerNtStatus(code: number): number {
 /**
  * Matches the code against known HRESULT values, and returns 0-3 matches.
  */
-export function appendHresultCodes(result: ErrorMessage[], data: Data, code: number) {
+export function appendHresultCodes(results: ErrorMessage[], data: Data, code: number) {
     // Do a direct HRESULT lookup first.
     const err = _.find(data.hresult, x => x.code === code);
-    if (err && result.indexOf(err) < 0) {
-        result.push(err);
+    if (err) {
+        results.push(err);
     }
 
     // If this is an HRESULT wrapper around a Win32 error, include the Win32 error as well.
     const win32Code = hresultUnwrapWin32(code);
     if (!isNaN(win32Code)) {
-        appendWin32Codes(result, data, win32Code);
+        const localResults: ErrorMessage[] = [];
+        appendWin32Codes(localResults, data, win32Code);
+        mergeResults(results, localResults.map(x => {
+            const suberr = spread(x);
+            suberr.type |= ErrorMessageType.HResult;
+            suberr.code = code;
+            return suberr;
+        }));
     }
 
     // If this is an HRESULT wrapper around an NTSTATUS, include the NTSTATUS error as well (which can also include NTSTATUS wrappers).
     const ntStatusCode = hresultUnwrapNtStatus(code);
     if (!isNaN(ntStatusCode)) {
-        appendNtStatusCodes(result, data, ntStatusCode);
+        const localResults: ErrorMessage[] = [];
+        appendNtStatusCodes(localResults, data, ntStatusCode);
+        mergeResults(results, localResults.map(x => {
+            const suberr = spread(x);
+            suberr.type |= ErrorMessageType.HResult;
+            suberr.code = code;
+            return suberr;
+        }));
     }
 
     // The filter manager has its own HRESULT-wrapper-around-NTSTATUS system.
     //  See FILTER_FLT_NTSTATUS_FROM_HRESULT (in ntstatus.h) and FILTER_HRESULT_FROM_FLT_NTSTATUS (in winerror.h)
     const filterManagerNtStatusCode = hresultUnwrapFilterManagerNtStatus(code);
     if (!isNaN(filterManagerNtStatusCode)) {
-        appendNtStatusCodes(result, data, filterManagerNtStatusCode);
+        const localResults: ErrorMessage[] = [];
+        appendNtStatusCodes(localResults, data, filterManagerNtStatusCode);
+        mergeResults(results, localResults.map(x => {
+            const suberr = spread(x);
+            suberr.type |= ErrorMessageType.HResult;
+            suberr.code = code;
+            return suberr;
+        }));
     }
 }
 
@@ -151,11 +184,11 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
     // Attempt to match as a dec number first.
     if (isValidDecNumber) {
         decCode = parseInt(query, 10);
-        if (mayBeWin32) {
-            appendWin32Codes(result, data, decCode);
-        }
         if (mayBeHresult) {
             appendHresultCodes(result, data, decCode);
+        }
+        if (mayBeWin32) {
+            appendWin32Codes(result, data, decCode);
         }
         if (mayBeNtStatus) {
             appendNtStatusCodes(result, data, decCode);
@@ -165,11 +198,11 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
     // Next, attempt to match as a hex number.
     if (isValidHexNumber) {
         hexCode = parseInt(query, 16);
-        if (mayBeWin32) {
-            appendWin32Codes(result, data, hexCode);
-        }
         if (mayBeHresult) {
             appendHresultCodes(result, data, hexCode);
+        }
+        if (mayBeWin32) {
+            appendWin32Codes(result, data, hexCode);
         }
         if (mayBeNtStatus) {
             appendNtStatusCodes(result, data, hexCode);
@@ -178,15 +211,7 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
 
     // Finally, offer to analyze it.
     if (isValidDecNumber) {
-        if (mayBeWin32 && toUInt32(decCode & 0xFFFF0000) === 0 && !_.some(result, x => x.type === ErrorMessageType.Win32 && x.code === decCode)) {
-            result.push({
-                code: decCode,
-                identifiers: [],
-                text: `Analyze ${decCode} as a Win32 error code`,
-                type: ErrorMessageType.Win32
-            });
-        }
-        if (mayBeHresult && !_.some(result, x => x.type === ErrorMessageType.HResult && x.code === decCode)) {
+        if (mayBeHresult && !_.some(result, x => (x.type & ErrorMessageType.HResult) && x.code === decCode)) {
             result.push({
                 code: decCode,
                 identifiers: [],
@@ -194,7 +219,15 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
                 type: ErrorMessageType.HResult
             });
         }
-        if (mayBeNtStatus && !_.some(result, x => x.type === ErrorMessageType.NtStatus && x.code === decCode)) {
+        if (mayBeWin32 && toUInt32(decCode & 0xFFFF0000) === 0 && !_.some(result, x => (x.type & ErrorMessageType.Win32) && x.code === decCode)) {
+            result.push({
+                code: decCode,
+                identifiers: [],
+                text: `Analyze ${decCode} as a Win32 error code`,
+                type: ErrorMessageType.Win32
+            });
+        }
+        if (mayBeNtStatus && !_.some(result, x => (x.type & ErrorMessageType.NtStatus) && x.code === decCode)) {
             result.push({
                 code: decCode,
                 identifiers: [],
@@ -204,15 +237,7 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
         }
     }
     if (isValidHexNumber) {
-        if (mayBeWin32 && toUInt32(hexCode & 0xFFFF0000) === 0 && !_.some(result, x => x.type === ErrorMessageType.Win32 && x.code === hexCode)) {
-            result.push({
-                code: hexCode,
-                identifiers: [],
-                text: `Analyze 0x${hex4(hexCode)} as a Win32 error code`,
-                type: ErrorMessageType.Win32
-            });
-        }
-        if (mayBeHresult && !_.some(result, x => x.type === ErrorMessageType.HResult && x.code === hexCode)) {
+        if (mayBeHresult && !_.some(result, x => (x.type & ErrorMessageType.HResult) && x.code === hexCode)) {
             result.push({
                 code: hexCode,
                 identifiers: [],
@@ -220,7 +245,15 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
                 type: ErrorMessageType.HResult
             });
         }
-        if (mayBeNtStatus && !_.some(result, x => x.type === ErrorMessageType.NtStatus && x.code === hexCode)) {
+        if (mayBeWin32 && toUInt32(hexCode & 0xFFFF0000) === 0 && !_.some(result, x => (x.type & ErrorMessageType.Win32) && x.code === hexCode)) {
+            result.push({
+                code: hexCode,
+                identifiers: [],
+                text: `Analyze 0x${hex4(hexCode)} as a Win32 error code`,
+                type: ErrorMessageType.Win32
+            });
+        }
+        if (mayBeNtStatus && !_.some(result, x => (x.type & ErrorMessageType.NtStatus) && x.code === hexCode)) {
             result.push({
                 code: hexCode,
                 identifiers: [],
@@ -296,14 +329,15 @@ export function search(query: string, type: QueryType | void, data: Data): Error
 }
 
 export function errorMessageTypeToQueryType(type: ErrorMessageType): QueryType {
-    switch (type) {
-        case ErrorMessageType.Win32: return 'win32';
-        case ErrorMessageType.HResult: return 'hresult';
-        case ErrorMessageType.NtStatus: return 'ntstatus';
-        default: return undefined;
-    }
+    if (type & ErrorMessageType.HResult)
+        return 'hresult';
+    if (type & ErrorMessageType.NtStatus)
+        return 'ntstatus';
+    if (type & ErrorMessageType.Win32)
+        return 'win32';
+    return undefined;
 }
 
-export function errorMessageUrl(errorMessage: ErrorMessage): string {
-    return '/?type=' + encodeURIComponent(errorMessageTypeToQueryType(errorMessage.type)) + '&code=' + encodeURIComponent(hex8(errorMessage.code));
+export function errorMessageUrl({ type, code }: { type: ErrorMessageType, code: number }): string {
+    return '/?type=' + encodeURIComponent(errorMessageTypeToQueryType(type)) + '&code=' + encodeURIComponent(hex8(code));
 }

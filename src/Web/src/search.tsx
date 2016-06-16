@@ -24,7 +24,12 @@ function Search({ data, location }: RoutedState) {
     return (
         <div>
             <Helmet title='HRESULT, Win32, and NTSTATUS Error Codes'/>
-            <form role="search">
+            <div className='jumbotron'>
+                <img src='icon-128x128.png' style={{width:128, height:128, float:'left', margin:'10px 10px 10px 0px'}} />
+                <h1>Error&#8203;Code&#8203;Lookup&#8203;.com</h1>
+                <p>Your source for the meanings of HRESULT, Win32, and NTSTATUS error codes!</p>
+            </div>
+            <form role='search'>
                 <SearchBox query={query} placeholder='Search error codes and messages' />
             </form>
             {resultList}

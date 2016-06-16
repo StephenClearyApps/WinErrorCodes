@@ -16,11 +16,12 @@ var debug = (process.env.NODE_ENV !== 'production');
 
 var config = {
     paths: {
-        allSrc: './src/**/*',
+        allSrc: ['./src/**/*', './static/**/*'],
         html: './src/*.html',
         css: './src/*.css',
         js: './src/**/*.js',
         mainJs: './src/main.tsx',
+        statics: './static/**/*',
         dist: '../..'
     }
 };
@@ -74,6 +75,11 @@ gulp.task('html', function () {
         .pipe(gulp.dest(config.paths.dist));
 });
 
+gulp.task('statics', function () {
+    return gulp.src(config.paths.statics)
+        .pipe(gulp.dest(config.paths.dist));
+});
+
 gulp.task('generate', function (done) {
     exec('src\\Win32ErrorTable\\bin\\Debug\\Win32ErrorTable.exe', { cwd: path.resolve('../..') }, function (err, stdout, stderr) {
         console.log(stdout);
@@ -86,7 +92,7 @@ gulp.task('generate', function (done) {
     });
 });
 
-gulp.task('build-src', ['html', 'css', 'js']);
+gulp.task('build-src', ['html', 'css', 'js', 'statics']);
 
 gulp.task('build', ['build-src', 'generate']);
 

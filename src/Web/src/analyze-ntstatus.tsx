@@ -1,10 +1,14 @@
-﻿import React from 'react';
-import { Data , Facility} from './typings/data';
+﻿import _ from 'lodash';
+import React from 'react';
+import { Link } from 'react-router';
+import { Data , Facility, ErrorMessageType } from './typings/data';
 import { toUInt32, toInt32, toInt16, valueAsInt32IsNegative, valueAsInt16IsNegative, hex4, hex8 } from './helpers';
+import { errorMessageUrl } from './logic';
 import Simple16BitCode from './simple-16bit-code';
 import Spanner from './spanner';
 
 class NtStatusCode {
+    fullCode: number;
     severity: number;
     customer: number;
     ntstatus: number;
@@ -18,15 +22,19 @@ class NtStatusCode {
     get errorCodeValid(): boolean {
         return !this.customer;
     }
+    get facilityHasNames(): boolean {
+        return this.facility && _.some(this.facility.names, x => x.name);
+    }
 
     constructor(data: Data, code: number) {
+        this.fullCode = code;
         this.severity = toUInt32(code & 0xC0000000) >>> 30;
         this.customer = toUInt32(code & 0x20000000);
         this.ntstatus = toUInt32(code & 0x10000000);
         this.facilityCode = toUInt32(code & 0x0FFF0000) >>> 16;
         this.errorCode = toUInt32(code & 0x0000FFFF);
         if (this.facilityCodeValid) {
-            this.facility = data.hresultFacilities.find(x => x.value === this.facilityCode);
+            this.facility = data.ntStatusFacilities.find(x => x.value === this.facilityCode);
         }
     }
 }
@@ -35,16 +43,16 @@ const severityNames = [
     'Success', 'Information', 'Warning', 'Error'
 ];
 
-function customerMessage(hresultCode: NtStatusCode) {
-    return hresultCode.customer ?
-        <span>The customer bit is set.This is a third-party error code, not a Microsoft error code.</span> :
-        <span>The customer bit is not set.This is a Microsoft error code.</span>;
+function customerMessage(code: NtStatusCode) {
+    return code.customer ?
+        <span>The customer bit is set. This is a third-party error code, not a Microsoft error code.</span> :
+        <span>The customer bit is not set. This is a Microsoft error code.</span>;
 }
 
-function ntstatusMessage(hresultCode: NtStatusCode) {
-    return hresultCode.ntstatus ?
-        <span>The reserved bit <code>N</code> is set.This is highly unusual.</span> :
-        <span>The reserved bit <code>N</code> is not set.This is normal.</span>;
+function ntstatusMessage(code: NtStatusCode) {
+    return code.ntstatus ?
+        <span>The reserved bit <code>N</code> is set. This is highly unusual. <Link to={errorMessageUrl({ type: ErrorMessageType.HResult, code: code.fullCode })}>This error code is probably an HRESULT and not an NTSTATUS.</Link></span> :
+        <span>The reserved bit <code>N</code> is not set. This is normal.</span>;
 }
 
 function AnalyzeNtStatus({ data, code }: { data: Data, code: number }) {
@@ -68,7 +76,7 @@ function AnalyzeNtStatus({ data, code }: { data: Data, code: number }) {
                                 ntstatusCode.facilityCodeValid ?
                                     <tr><td><code><Spanner text={hex} ranges={[{ begin: 1, end: 4 }]}/></code></td><td><div>
                                         <div>Facility: <Simple16BitCode code={ntstatusCode.facilityCode} /></div>
-                                        { ntstatusCode.facility ? <div>{ntstatusCode.facility.names.map(x => <div key={x.name}><code>{x.name}</code></div>) }</div> : null }
+                                        { ntstatusCode.facilityHasNames ? <div>{ntstatusCode.facility.names.map(x => <div key={x.name}><code>{x.name}</code></div>) }</div> : null }
                                     </div></td></tr> :
                                     null
                             }

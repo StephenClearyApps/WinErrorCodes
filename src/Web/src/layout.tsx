@@ -21,6 +21,7 @@ function Layout(props: RoutedState) {
                             <span className="icon-bar"></span>
                             <span className="icon-bar"></span>
                         </button>
+                        <Link className="navbar-left" to="/"><img src="icon-32x32.png" style={{marginTop:8, marginRight:4, height:32, width:32}}/></Link>
                         <Link className="navbar-brand" to="/">ErrorCodeLookup.com</Link>
                     </div>
                     <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">

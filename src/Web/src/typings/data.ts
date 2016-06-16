@@ -1,7 +1,7 @@
 ﻿export const enum ErrorMessageType {
-    Win32,
-    HResult,
-    NtStatus
+    Win32 = 1 << 0,
+    HResult = 1 << 1,
+    NtStatus = 1 << 2
 }
 
 /** A single error code, with its identifiers and/or message text. */
@@ -189,12 +189,22 @@ export function transformData(data: DataDto): Data {
     };
 }
 
-const errorMessageTypeHumanReadableStrings = [ 'Win32', 'HRESULT', 'NTSTATUS' ];
 export function errorMessageTypeHumanReadableString(type: ErrorMessageType): string {
-    return errorMessageTypeHumanReadableStrings[type];
+    if (type & ErrorMessageType.HResult)
+        return 'HRESULT';
+    if (type & ErrorMessageType.NtStatus)
+        return 'NTSTATUS';
+    if (type & ErrorMessageType.Win32)
+        return 'Win32';
+    return undefined;
 }
 
-const errorMessageTypeHumanReadableShortStrings = [ 'W', 'HR', 'NT' ];
 export function errorMessageTypeHumanReadableShortString(type: ErrorMessageType): string {
-    return errorMessageTypeHumanReadableShortStrings[type];
+    if (type & ErrorMessageType.HResult)
+        return 'HR';
+    if (type & ErrorMessageType.NtStatus)
+        return 'NT';
+    if (type & ErrorMessageType.Win32)
+        return 'W';
+    return undefined;
 }

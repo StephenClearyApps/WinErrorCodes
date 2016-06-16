@@ -6,13 +6,15 @@ function ExactMatches({ errorMessages }: { errorMessages: ErrorMessage[] }) {
     if (errorMessages.length) {
         return (
             <div>
-                { errorMessages.map(x => <ExactMatch errorMessage={x} key={x.code} />) }
+                { errorMessages.map(x => <ExactMatch errorMessage={x} key={x.type + ' ' + x.code} />) }
             </div>
         );
     }
     return (
-        <div>
-            <div>No exact match found.</div>
+        <div className='panel panel-default'>
+            <div className='panel-body'>
+                <div>No exact match found.</div>
+            </div>
         </div>
     );
 }

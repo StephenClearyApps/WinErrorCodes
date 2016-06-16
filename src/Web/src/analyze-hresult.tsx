@@ -1,12 +1,15 @@
-﻿import React from 'react';
-import { Data, Facility } from './typings/data';
-import { hresultUnwrapNtStatus, hresultUnwrapFilterManagerNtStatus } from './logic';
+﻿import _ from 'lodash';
+import React from 'react';
+import { Link } from 'react-router';
+import { Data , Facility, ErrorMessageType } from './typings/data';
+import { hresultUnwrapNtStatus, hresultUnwrapFilterManagerNtStatus, errorMessageUrl } from './logic';
 import { toUInt32, hex8 } from './helpers';
 import AnalyzeNtStatus from './analyze-ntstatus';
 import Simple16BitCode from './simple-16bit-code';
 import Spanner from './spanner';
 
 class HResultCode {
+    fullCode: number;
     severity: number;
     reserved: number;
     customer: number;
@@ -23,8 +26,12 @@ class HResultCode {
     get errorCodeValid(): boolean {
         return !this.customer && !this.ntstatus;
     }
+    get facilityHasNames(): boolean {
+        return this.facility && _.some(this.facility.names, x => x.name);
+    }
 
     constructor(data: Data, code: number) {
+        this.fullCode = code;
         this.severity = toUInt32(code & 0x80000000);
         this.reserved = toUInt32(code & 0x40000000);
         this.customer = toUInt32(code & 0x20000000);
@@ -40,28 +47,28 @@ class HResultCode {
     }
 }
 
-function reservedMessage(hresultCode: HResultCode) {
-    return hresultCode.reserved ?
-        <span>The reserved bit <code>R</code> is set.This is highly unusual.</span> :
-        <span>The reserved bit <code>R</code> is not set.This is normal.</span>;
+function reservedMessage(code: HResultCode) {
+    return code.reserved ?
+        <span>The reserved bit <code>R</code> is set. This is highly unusual. <Link to={errorMessageUrl({ type: ErrorMessageType.NtStatus, code: code.fullCode })}>This error code is probably an NTSTATUS and not an HRESULT.</Link></span> :
+        <span>The reserved bit <code>R</code> is not set. This is normal.</span>;
 }
 
-function xreservedMessage(hresultCode: HResultCode) {
-    return hresultCode.xreserved ?
-        <span>The reserved bit <code>X</code> is set.This is highly unusual.</span> :
-        <span>The reserved bit <code>X</code> is not set.This is normal.</span>;
+function xreservedMessage(code: HResultCode) {
+    return code.xreserved ?
+        <span>The reserved bit <code>X</code> is set. This is highly unusual.</span> :
+        <span>The reserved bit <code>X</code> is not set. This is normal.</span>;
 }
 
-function customerMessage(hresultCode: HResultCode) {
-    return hresultCode.customer ?
-        <span>The customer bit is set.This is a third-party error code, not a Microsoft error code.</span> :
-        <span>The customer bit is not set.This is a Microsoft error code.</span>;
+function customerMessage(code: HResultCode) {
+    return code.customer ?
+        <span>The customer bit is set. This is a third-party error code, not a Microsoft error code.</span> :
+        <span>The customer bit is not set. This is a Microsoft error code.</span>;
 }
 
-function ntstatusMessage(hresultCode: HResultCode) {
-    return hresultCode.ntstatus ?
-        <span>The NTSTATUS bit is set.This HRESULT code is a wrapper around the NTSTATUS code <code>0x{hex8(hresultCode.ntstatusCode) }</code>.</span> :
-        <span>The NTSTATUS bit is not set.This is a regular HRESULT code.</span>;
+function ntstatusMessage(code: HResultCode) {
+    return code.ntstatus ?
+        <span>The NTSTATUS bit is set. This HRESULT code is a wrapper around the <Link to={errorMessageUrl({ type: ErrorMessageType.NtStatus, code: code.ntstatusCode })}>NTSTATUS code <code>0x{hex8(code.ntstatusCode) }</code></Link>.</span> :
+        <span>The NTSTATUS bit is not set. This is a regular HRESULT code.</span>;
 }
 
 function AnalyzeHResult({ data, code }: { data: Data, code: number }) {
@@ -81,7 +88,7 @@ function AnalyzeHResult({ data, code }: { data: Data, code: number }) {
             rows.push(
                 <tr key={6}><td><code><Spanner text={hex} ranges={[{ begin: 1, end: 4 }]}/></code></td><td><div>
                     <div>Facility: <Simple16BitCode code={hresultCode.facilityCode} /></div>
-                    { hresultCode.facility ? <div>{hresultCode.facility.names.map(x => <div key={x.name}><code>{x.name}</code></div>) }</div> : null }
+                    { hresultCode.facilityHasNames ? <div>{hresultCode.facility.names.map(x => <div key={x.name}><code>{x.name}</code></div>) }</div> : null }
                 </div></td></tr>
             );
         }
