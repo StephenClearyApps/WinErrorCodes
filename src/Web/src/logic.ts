@@ -198,14 +198,16 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
     // Next, attempt to match as a hex number.
     if (isValidHexNumber) {
         hexCode = parseInt(query, 16);
-        if (mayBeHresult) {
-            appendHresultCodes(result, data, hexCode);
-        }
-        if (mayBeWin32) {
-            appendWin32Codes(result, data, hexCode);
-        }
-        if (mayBeNtStatus) {
-            appendNtStatusCodes(result, data, hexCode);
+        if (hexCode !== decCode) {
+            if (mayBeHresult) {
+                appendHresultCodes(result, data, hexCode);
+            }
+            if (mayBeWin32) {
+                appendWin32Codes(result, data, hexCode);
+            }
+            if (mayBeNtStatus) {
+                appendNtStatusCodes(result, data, hexCode);
+            }
         }
     }
 
