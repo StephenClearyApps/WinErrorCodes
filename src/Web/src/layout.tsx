@@ -5,6 +5,7 @@ import { RoutedState } from './reducer';
 import Home from './home';
 import Ad from './ad';
 import SearchBox from './search-box';
+import { preventDefault } from './helpers';
 
 function adKey() {
     return window.location.href.replace(/\?q=.*/, '');
@@ -29,7 +30,7 @@ function Layout(props: RoutedState) {
                         <Link className="navbar-brand" to="/">ErrorCodeLookup.com</Link>
                     </div>
                     <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                        <form className="navbar-form navbar-left" role="search">
+                        <form className="navbar-form navbar-left" role="search" onSubmit={preventDefault}>
                             <SearchBox query={query} />
                         </form>
                         <ul className="nav navbar-nav navbar-right">

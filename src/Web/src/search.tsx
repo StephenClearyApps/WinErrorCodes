@@ -6,6 +6,7 @@ import { ErrorMessage } from './typings/data';
 import { search, isValidTextQuery } from './logic';
 import SearchBox from './search-box';
 import SearchResult from './search-result';
+import { preventDefault } from './helpers';
 
 function Search({ data, location }: RoutedState) {
     const locationQuery: any = location.query;
@@ -29,7 +30,7 @@ function Search({ data, location }: RoutedState) {
                 <h1>Error&#8203;Code&#8203;Lookup&#8203;.com</h1>
                 <p>Your source for the meanings of HRESULT, Win32, and NTSTATUS error codes!</p>
             </div>
-            <form role='search'>
+            <form role='search' onSubmit={preventDefault}>
                 <SearchBox query={query} placeholder='Search error codes and messages' />
             </form>
             {resultList}

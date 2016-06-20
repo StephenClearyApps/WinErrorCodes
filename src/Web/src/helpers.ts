@@ -1,4 +1,6 @@
-﻿function checkStatus(response: Response): Response {
+﻿import React from 'react';
+
+function checkStatus(response: Response): Response {
     if (response.status >= 200 && response.status < 300) {
         return response;
     } else {
@@ -67,4 +69,8 @@ export function hex8(x: number): string {
         hexChars[(x >> 8) & 0xF] +
         hexChars[(x >> 4) & 0xF] +
         hexChars[(x >> 0) & 0xF];
+}
+
+export function preventDefault(e: React.SyntheticEvent) {
+    e.preventDefault();
 }
