@@ -183,7 +183,7 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
 
     // Attempt to match as a dec number first.
     if (isValidDecNumber) {
-        decCode = parseInt(query, 10);
+        decCode = toUInt32(parseInt(query, 10));
         if (mayBeHresult) {
             appendHresultCodes(result, data, decCode);
         }
@@ -197,7 +197,7 @@ function numericSearch(query: string, data: Data, mayBeWin32: boolean, mayBeNtSt
 
     // Next, attempt to match as a hex number.
     if (isValidHexNumber) {
-        hexCode = parseInt(query, 16);
+        hexCode = toUInt32(parseInt(query, 16));
         if (hexCode !== decCode) {
             if (mayBeHresult) {
                 appendHresultCodes(result, data, hexCode);
